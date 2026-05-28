@@ -158,17 +158,22 @@ namespace db::lexer{
 		throw std::runtime_error(std::string("LEXER_ERROR: unexpected character '") + c + "' at position " + std::to_string(_pos));
 	}
 
-
-}
-
-
-int main(){
-	db::lexer::Lexer l = db::lexer::Lexer("select * from employees where name = \"garv\" ;");
-
-	auto a = l.next_token();
-	while(a.type != db::lexer::TokenType::EOF_TOKEN) {
-		std::cout<<a.lexeme<<" "<<static_cast<int>(a.type)<<std::endl;
-		a = l.next_token();
+	Lexer::~Lexer(){
+		_inputStream.clear();
+		_tokenTable.clear();
 	}
-	std::cout<<a.lexeme<<" "<<static_cast<int>(a.type)<<std::endl;
+
+
 }
+
+
+// int main(){
+// 	db::lexer::Lexer l = db::lexer::Lexer("select * from employees where name = \"garv\" ;");
+
+// 	auto a = l.next_token();
+// 	while(a.type != db::lexer::TokenType::EOF_TOKEN) {
+// 		std::cout<<a.lexeme<<" "<<static_cast<int>(a.type)<<std::endl;
+// 		a = l.next_token();
+// 	}
+// 	std::cout<<a.lexeme<<" "<<static_cast<int>(a.type)<<std::endl;
+// }

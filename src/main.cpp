@@ -6,7 +6,7 @@ namespace db {
 
 	DB::DB(){
 		this->_parser = std::make_unique<db::parser::Parser>();
-		this->_lexer = std::make_unique<db::lexer::Lexer>();
+		// this->_lexer = std::make_unique<db::lexer::Lexer>
 	}
 
 	int DB::REPL(){
@@ -27,5 +27,11 @@ namespace db {
 		return 0;
 	}
 
+	DB::~DB(){}
 
+}
+
+int main(int argc, char** argv) {
+    db::DB app;
+    return app.REPL();
 }

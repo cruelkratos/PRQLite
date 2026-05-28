@@ -14,7 +14,7 @@ public:
 
 private:
 std::unique_ptr<db::parser::Parser> _parser;
-std::unique_ptr<db::lexer::Lexer> _lexer;
+// std::unique_ptr<db::lexer::Lexer> _lexer;
 
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include<unordered_map>
+#include<string>
 
 namespace db::lexer{
 
@@ -46,5 +47,6 @@ namespace db::lexer{
 	public:
 		Lexer(std::string _inputStream);
 		Token next_token();
+		~Lexer();
 	};
 }

@@ -1,0 +1,115 @@
+statement
+    → create_stmt
+    | insert_stmt
+    | select_stmt
+    | delete_stmt
+
+--------------------------------------------------
+-- CREATE TABLE
+--------------------------------------------------
+
+create_stmt
+    → CREATE TABLE identifier
+      "(" column_def_list ")"
+
+column_def_list
+    → column_def (COMMA column_def)*
+
+column_def
+    → identifier type
+
+type
+    → INT
+    | TEXT
+    | BOOL
+
+--------------------------------------------------
+-- INSERT
+--------------------------------------------------
+
+insert_stmt
+    → INSERT INTO identifier
+      VALUES "(" value_list ")"
+
+value_list
+    → literal (COMMA literal)*
+
+--------------------------------------------------
+-- SELECT
+--------------------------------------------------
+
+select_stmt
+    → SELECT select_list
+      FROM identifier
+      where_clause?
+      order_clause?
+      limit_clause?
+
+select_list
+    → STAR
+    | identifier (COMMA identifier)*
+
+where_clause
+    → WHERE expression
+
+order_clause
+    → ORDER BY identifier order_direction?
+
+order_direction
+    → ASC
+    | DESC
+
+limit_clause
+    → LIMIT NUMBER
+
+--------------------------------------------------
+-- DELETE
+--------------------------------------------------
+
+delete_stmt
+    → DELETE FROM identifier
+      where_clause?
+
+--------------------------------------------------
+-- EXPRESSIONS
+--------------------------------------------------
+
+expression
+    → or_expr
+
+or_expr
+    → and_expr ("OR" and_expr)*
+
+and_expr
+    → equality_expr ("AND" equality_expr)*
+
+equality_expr
+    → comparison_expr
+      (("=" | "!=") comparison_expr)*
+
+comparison_expr
+    → primary
+      ((">" | ">=" | "<" | "<=")
+       primary)*
+
+primary
+    → identifier
+    | literal
+    | "(" expression ")"
+
+--------------------------------------------------
+-- LITERALS
+--------------------------------------------------
+
+literal
+    → NUMBER
+    | STRING
+    | TRUE
+    | FALSE
+
+--------------------------------------------------
+-- IDENTIFIERS
+--------------------------------------------------
+
+identifier
+    → IDENTIFIER
