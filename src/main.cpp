@@ -6,7 +6,7 @@ namespace db {
 
 	DB::DB(){
 		this->_parser = std::make_unique<db::parser::Parser>();
-		this->_lexer = std::make_unique<db::lexer::Lexer>();
+		// this->_lexer = std::make_unique<db::lexer::Lexer>();
 	}
 
 	int DB::REPL(){
