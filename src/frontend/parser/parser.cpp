@@ -1,4 +1,5 @@
-#include<include/frontend/parser.hpp>
+#include<include/frontend/parser/parser.hpp>
+#include<include/frontend/parser/AST.hpp>
 #include<include/frontend/lexer.hpp>
 #include<memory>
 #include<iostream>
@@ -75,6 +76,6 @@ namespace db::parser{
 
 	void Parser::parseStatement(){
 		// implement according to grammar.
-		statementTree = new ASTNode(); // simple for now
+		statementTree = new Statement(); // simple for now
 	}
 }

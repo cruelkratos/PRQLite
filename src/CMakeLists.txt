@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
-# Collect sources explicitly
-set(DB_SOURCES
-    main.cpp
-    storage.cpp
-    frontend/lexer.cpp
-    frontend/parser.cpp
+# Collect sources automatically from this directory
+file(GLOB_RECURSE DB_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 
 add_executable(db ${DB_SOURCES})

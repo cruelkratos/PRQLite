@@ -2,15 +2,11 @@
 #include<string>
 #include<vector>
 #include<frontend/lexer.hpp>
+#include<frontend/parser/AST.hpp>
 
 namespace db::parser{
 
-	class ASTNode{
-		public:
-		std::vector<ASTNode*> children;
-		ASTNode(); // make paramaterized constructor.
-		
-	};
+	
 
 	class Parser{
 		public:
