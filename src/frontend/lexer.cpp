@@ -28,7 +28,11 @@ namespace db::lexer{
           // Logical
           {"AND",    TokenType::AND},    {"and",    TokenType::AND},
           {"OR",     TokenType::OR},     {"or",     TokenType::OR},
-          {"NOT",    TokenType::NOT},    {"not",    TokenType::NOT}
+          {"NOT",    TokenType::NOT},    {"not",    TokenType::NOT},
+		  {"ASC",  TokenType::ASC},  {"asc",  TokenType::ASC},
+		  {"DESC", TokenType::DESC}, {"desc", TokenType::DESC},
+		  {"TRUE", TokenType::TRUE} , {"true", TokenType::TRUE},
+		  {"FALSE", TokenType::FALSE} , {"false", TokenType::FALSE}
       }) 
 	{
 		if(_inputStream.size() == 0){

@@ -19,6 +19,7 @@ namespace db::parser{
 
 			while(temp.type!= db::lexer::TokenType::EOF_TOKEN){
 				tokenStream.push_back(temp);
+				temp = _lexer->next_token();
 			}
 			
 		}
@@ -49,25 +50,31 @@ namespace db::parser{
 		if(tokenStream.size()<1){
 			throw std::runtime_error("Token Stream is Empty");
 		}
-		if(token_pos >= tokenStream.size()){
-			throw std::exception("At End of token stream");
+		if(static_cast<size_t>(token_pos) >= tokenStream.size()){
+			throw std::runtime_error("At End of token stream");
 		}
 		return tokenStream[token_pos];
+	}
+
+	bool Parser::isAtEnd() {
+    return static_cast<size_t>(token_pos) >= tokenStream.size();
 	}
 
 	void Parser::advance(){
 		++token_pos;
 	}
 
-	bool Parser::match(db::lexer::Token &t){
-		if (this->peak().lexeme == t.lexeme && this->peak().type == t.type) {
+	bool Parser::match(const db::lexer::Token &t){
+		const auto& current = peak();
+		if (current.lexeme == t.lexeme && current.type == t.type) {
 			this->advance();
 			return true;
 		} 
 		return false;
 	}
-	bool Parser::expect(db::lexer::Token &t){
-		if (this->peak().lexeme == t.lexeme && this->peak().type == t.type) {
+	bool Parser::expect(const db::lexer::Token &t){
+		const auto& current = peak();
+		if (current.lexeme == t.lexeme && current.type == t.type) {
 			this->advance();
 			return true;
 		} 
@@ -76,6 +83,185 @@ namespace db::parser{
 
 	void Parser::parseStatement(){
 		// implement according to grammar.
-		statementTree = new Statement(); // simple for now
+		db::lexer::Token t = peak();
+		if(t.type == db::lexer::TokenType::SELECT){
+			statementTree = parseSelect();
+		}
+		else if(t.type == db::lexer::TokenType::INSERT){
+			statementTree = parseInsert();
+		}
+
+		else if(t.type == db::lexer::TokenType::DELETE){
+			statementTree = parseDelete();
+		}
+		else throw std::runtime_error("SYNTAX ERROR: Statement must be SEL/INS/DEL");
 	}
+
+	SelectStatement* Parser::parseSelect(){
+		auto* node = new SelectStatement();
+		advance();
+		if(!isAtEnd() && peak().type == db::lexer::TokenType::STAR){
+			node->selectStar = true;
+			advance();
+		} else{
+			node->columns.push_back(parseIdentifier());
+			while(!isAtEnd() && peak().type == db::lexer::TokenType::COMMA){
+				advance();
+				node->columns.push_back(parseIdentifier());
+			}
+		}
+
+		if (isAtEnd() || peak().type != db::lexer::TokenType::FROM)
+    	throw std::runtime_error("SYNTAX ERROR: expected FROM");
+		advance();
+		node->tableName = parseIdentifier();
+
+		if (!isAtEnd() && peak().type == db::lexer::TokenType::WHERE) {
+        advance();
+        node->whereClause = parseExpression();
+    	}
+
+    
+		if (!isAtEnd() && peak().type == db::lexer::TokenType::ORDER) {
+			advance();
+			if (isAtEnd() || peak().type != db::lexer::TokenType::BY)
+    		throw std::runtime_error("SYNTAX ERROR: expected BY after ORDER");
+			advance();
+			node->orderBy = parseIdentifier();
+			if (!isAtEnd() && peak().type == db::lexer::TokenType::ASC) {
+				node->orderDir = "ASC"; advance();
+			} else if (!isAtEnd() && peak().type == db::lexer::TokenType::DESC) {
+				node->orderDir = "DESC"; advance();
+			}
+		}
+
+    
+		if (!isAtEnd() && peak().type == db::lexer::TokenType::LIMIT) {
+			advance();
+			if (isAtEnd() || peak().type != db::lexer::TokenType::NUMBER)
+    		throw std::runtime_error("SYNTAX ERROR: expected number after LIMIT");
+			node->limitVal = std::stoi(peak().lexeme);
+			advance();
+		}
+
+    	return node;
+	}
+
+	// expression → or_expr
+	ASTNode* Parser::parseExpression() {
+    return parseOrExpr();
+	}
+
+	// or_expr → and_expr ("OR" and_expr)*
+	ASTNode* Parser::parseOrExpr() {
+    ASTNode* left = parseAndExpr();
+    while (!isAtEnd() && peak().type == db::lexer::TokenType::OR) {
+        advance();
+        auto* node  = new BinaryExpr();
+        node->op    = "OR";
+        node->left  = left;
+        node->right = parseAndExpr();
+        left = node;
+    }
+    return left;
+   }
+
+   // and_expr → equality_expr ("AND" equality_expr)*
+   ASTNode* Parser::parseAndExpr() {
+    ASTNode* left = parseEqualityExpr();
+    while (!isAtEnd() && peak().type == db::lexer::TokenType::AND) {
+        advance();
+        auto* node  = new BinaryExpr();
+        node->op    = "AND";
+        node->left  = left;
+        node->right = parseEqualityExpr();
+        left = node;
+    }
+    return left;
+}
+
+ASTNode* Parser::parseEqualityExpr() {
+    ASTNode* left = parseComparisonExpr();
+    while (!isAtEnd() && (peak().type == db::lexer::TokenType::EQUAL ||
+		peak().type == db::lexer::TokenType::NOT_EQUAL)) {
+        std::string op = peak().lexeme;
+        advance();
+        auto* node  = new BinaryExpr();
+        node->op    = op;
+        node->left  = left;
+        node->right = parseComparisonExpr();
+        left = node;
+    }
+    return left;
+}
+
+// comparison_expr → primary ((">" | ">=" | "<" | "<=") primary)*
+	ASTNode* Parser::parseComparisonExpr() {
+		ASTNode* left = parsePrimary();
+		while (!isAtEnd() && (peak().type == db::lexer::TokenType::GREATER       ||
+		peak().type == db::lexer::TokenType::GREATER_EQUAL ||
+		peak().type == db::lexer::TokenType::LESS          ||
+		peak().type == db::lexer::TokenType::LESS_EQUAL))  {
+			std::string op = peak().lexeme;
+			advance();
+			auto* node  = new BinaryExpr();
+			node->op    = op;
+			node->left  = left;
+			node->right = parsePrimary();
+			left = node;
+		}
+		return left;
+	}
+
+	// primary → identifier | literal | "(" expression ")"
+	ASTNode* Parser::parsePrimary() {
+		db::lexer::Token t = peak();
+
+		if (t.type == db::lexer::TokenType::LPAREN) {
+			advance();
+			ASTNode* inner = parseExpression();
+			if (!isAtEnd() && peak().type != db::lexer::TokenType::RPAREN)
+				throw std::runtime_error("SYNTAX ERROR: expected ')'");
+			advance();
+			return inner;
+		}
+		if (t.type == db::lexer::TokenType::NUMBER ||
+			t.type == db::lexer::TokenType::STRING ||
+			t.type == db::lexer::TokenType::TRUE   ||
+			t.type == db::lexer::TokenType::FALSE) {
+			auto* node = new LiteralExpr();
+			node->value = t;
+			advance();
+			return node;
+		}
+		if (t.type == db::lexer::TokenType::IDENTIFIER) {
+			auto* node = new IdentifierExpr();
+			node->name = t.lexeme;
+			advance();
+			return node;
+		}
+		throw std::runtime_error("SYNTAX ERROR: unexpected token '" + t.lexeme + "'");
+	}
+
+	
+	std::string Parser::parseIdentifier() {
+		if (isAtEnd() && peak().type != db::lexer::TokenType::IDENTIFIER)
+			throw std::runtime_error("SYNTAX ERROR: expected identifier, got '" + peak().lexeme + "'");
+		std::string name = peak().lexeme;
+		advance();
+		return name;
+	}
+
+	InsertStatement* Parser::parseInsert() {
+    auto* node = new InsertStatement();
+    // TODO: fill node->tableName, node->values by consuming tokens
+    return node;
+	}
+
+	DeleteStatement* Parser::parseDelete() {
+		auto* node = new DeleteStatement();
+		// TODO: fill node->tableName and node->whereClause by consuming tokens
+		return node;
+	}
+
 }

@@ -14,6 +14,8 @@ namespace db::lexer{
         
         // Logical
         AND, OR, NOT,
+
+		TRUE,FALSE,
         
         // Literals & Identifiers
         IDENTIFIER, NUMBER, STRING,
@@ -28,6 +30,9 @@ namespace db::lexer{
         LESS_EQUAL,    // <=
         GREATER_EQUAL, // >=
         NOT_EQUAL,     // != or <>
+
+		ASC,
+		DESC,
 
         EOF_TOKEN
     };

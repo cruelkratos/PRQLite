@@ -1,8 +1,8 @@
 #pragma once
 #include<string>
 #include<vector>
-#include<frontend/lexer.hpp>
-#include<frontend/parser/AST.hpp>
+#include<include/frontend/lexer.hpp>
+#include<include/frontend/parser/AST.hpp>
 
 namespace db::parser{
 
@@ -14,14 +14,26 @@ namespace db::parser{
 		void insert(std::string statement);
 		ASTNode * getTree();
 		void reset();
+		void parse_(){parseStatement();} // temp for testing
 
 		private:
+		bool isAtEnd();
 		db::lexer::Token peak();
 		void advance();
-		bool match(db::lexer::Token &t);
-		bool expect(db::lexer::Token &t);
+		bool match(const db::lexer::Token &t);
+		bool expect(const db::lexer::Token &t);
 		std::vector<db::lexer::Token> tokenStream;
 		void parseStatement(); //sets root node of statement
+		SelectStatement* parseSelect();
+		InsertStatement* parseInsert();
+		DeleteStatement* parseDelete();
+		ASTNode* parseExpression();
+		ASTNode* parseOrExpr();
+		ASTNode* parseAndExpr();
+		ASTNode* parseEqualityExpr();
+		ASTNode* parseComparisonExpr();
+		ASTNode* parsePrimary();
+		std::string parseIdentifier();
 		int token_pos;
 		ASTNode* statementTree;
 	};
