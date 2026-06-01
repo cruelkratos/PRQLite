@@ -10,6 +10,9 @@ namespace db::lexer{
     : _pos(0), 
       _inputStream(std::move(inputStream)),
       _tokenTable({
+		//DDL
+		  {"CREATE", TokenType::CREATE}, {"create", TokenType::CREATE},
+		  {"TABLE", TokenType::TABLE}, {"table", TokenType::TABLE},
           // DML
           {"SELECT", TokenType::SELECT}, {"select", TokenType::SELECT},
           {"INSERT", TokenType::INSERT}, {"insert", TokenType::INSERT},
@@ -25,14 +28,19 @@ namespace db::lexer{
           {"HAVING", TokenType::HAVING}, {"having", TokenType::HAVING},
           {"LIMIT",  TokenType::LIMIT},  {"limit",  TokenType::LIMIT},
 
-          // Logical
+          // Logical and Misc
           {"AND",    TokenType::AND},    {"and",    TokenType::AND},
           {"OR",     TokenType::OR},     {"or",     TokenType::OR},
           {"NOT",    TokenType::NOT},    {"not",    TokenType::NOT},
 		  {"ASC",  TokenType::ASC},  {"asc",  TokenType::ASC},
 		  {"DESC", TokenType::DESC}, {"desc", TokenType::DESC},
 		  {"TRUE", TokenType::TRUE} , {"true", TokenType::TRUE},
-		  {"FALSE", TokenType::FALSE} , {"false", TokenType::FALSE}
+		  {"FALSE", TokenType::FALSE} , {"false", TokenType::FALSE},
+		  {"INTO", TokenType::INTO}, {"into", TokenType::INTO},
+		  {"VALUES", TokenType::VALUES}, {"values", TokenType::VALUES},
+		  {"INT", TokenType::INT}, {"int", TokenType::INT},
+		  {"TEXT", TokenType::TEXT}, {"text", TokenType::TEXT},
+		  {"BOOL", TokenType::BOOL}, {"bool", TokenType::BOOL},
       }) 
 	{
 		if(_inputStream.size() == 0){

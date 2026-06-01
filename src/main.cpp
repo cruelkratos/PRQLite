@@ -9,23 +9,47 @@ namespace db {
 		// this->_lexer = std::make_unique<db::lexer::Lexer>
 	}
 
-	int DB::REPL(){
-		int exit_flag = 1;
-		while(exit_flag){
-			std::string statement;
-			std::cin>>statement;
-			while(statement.size() && statement.back() != ';' && statement!="exit"){
-				//temp logic fix with lexer 
-				_parser.get()->insert(statement);
-				std::cin>>statement;
-			}
-			if(statement=="exit"){
-				exit_flag = 0;
-			}
-			//execute and print
-		}
-		return 0;
-	}
+	int DB::REPL() {
+    std::string line;
+    std::string accumulated;
+
+    std::cout << "db> ";
+    while (std::getline(std::cin, line)) {
+        if (line == "exit")
+            break;
+
+        // check if this line contains the terminator
+        bool terminated = false;
+        auto pos = line.find(';');
+        if (pos != std::string::npos) {
+            line = line.substr(0, pos); // strip everything from ';' onward
+            terminated = true;
+        }
+
+        accumulated += " " + line;
+
+        if (terminated) {
+            try {
+                _parser->insert(accumulated);
+                _parser->parse_();
+                db::parser::ASTNode* tree = _parser->getTree();
+                // TODO: pass to executor
+                std::cout << "OK\n";
+            } catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << "\n";
+				_parser->reset();
+            }
+            _parser->reset();
+            accumulated.clear();
+            std::cout << "db> ";
+        } else {
+            // multi-line input — show continuation prompt like postgres
+            std::cout << "... ";
+        }
+    }
+
+    return 0;
+}
 
 	DB::~DB(){}
 

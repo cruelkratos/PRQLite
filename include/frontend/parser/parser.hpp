@@ -27,6 +27,9 @@ namespace db::parser{
 		SelectStatement* parseSelect();
 		InsertStatement* parseInsert();
 		DeleteStatement* parseDelete();
+		CreateStatement* parseCreate();
+		std::vector<db::table::Column> parseColumnDefs();
+		db::table::Column parseColumnDef();
 		ASTNode* parseExpression();
 		ASTNode* parseOrExpr();
 		ASTNode* parseAndExpr();
@@ -34,6 +37,7 @@ namespace db::parser{
 		ASTNode* parseComparisonExpr();
 		ASTNode* parsePrimary();
 		std::string parseIdentifier();
+		std::vector<db::lexer::Token> parseValues();
 		int token_pos;
 		ASTNode* statementTree;
 	};

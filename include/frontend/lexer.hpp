@@ -6,6 +6,10 @@
 namespace db::lexer{
 
 	enum class TokenType {
+
+		//DDL
+		CREATE,TABLE,
+
         // DML
         SELECT, INSERT, UPDATE, DELETE,
         
@@ -31,8 +35,12 @@ namespace db::lexer{
         GREATER_EQUAL, // >=
         NOT_EQUAL,     // != or <>
 
+		INT,TEXT,BOOL,
+
 		ASC,
 		DESC,
+		INTO,
+		VALUES,
 
         EOF_TOKEN
     };

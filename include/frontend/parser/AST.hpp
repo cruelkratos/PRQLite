@@ -1,23 +1,25 @@
 #pragma once
 #include<vector>
 #include <string>
+#include<memory>
 #include<include/frontend/lexer.hpp>
+#include<include/table.hpp>
 
 
 namespace db::parser {
 	class ASTNode{
 	public:
-		std::vector<ASTNode*> children;
 		ASTNode(); // make paramaterized constructor.
 		// virtual void parseStatement() = 0;
-		virtual ~ASTNode() = default;
+		ASTNode* left  = nullptr;
+        ASTNode* right = nullptr;
+		virtual ~ASTNode();
 		
 	};
 
 	struct BinaryExpr : public ASTNode {
         std::string op;   // "=", "!=", ">", "AND", "OR", etc.
-        ASTNode* left  = nullptr;
-        ASTNode* right = nullptr;
+		// ~BinaryExpr();
     };
 
     struct LiteralExpr : public ASTNode {
@@ -39,6 +41,7 @@ namespace db::parser {
         std::string orderBy;                    
         std::string orderDir  = "ASC";
         int limitVal          = -1; 
+		~SelectStatement();
 
 	};
 
@@ -52,6 +55,15 @@ namespace db::parser {
 	public:
 		std::string tableName;
         ASTNode* whereClause = nullptr;
+		~DeleteStatement();
 	};
+
+	class CreateStatement : public ASTNode{
+		public:
+		CreateStatement(std::string name, std::vector<db::table::Column> &c);
+		std::string tableName;
+		std::shared_ptr<db::table::TableSchema> tableSchema;
+		// ~CreateStatement();
+ 	};
 
 }
