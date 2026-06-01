@@ -1,5 +1,6 @@
 #pragma once
 #include<string>
+#include<vector>
 #include<include/frontend/lexer.hpp>
 
 	namespace db::table{
