@@ -1,4 +1,5 @@
 #include<include/frontend/parser/AST.hpp>
+#include<include/catalog.hpp>
 
 namespace db::parser{
 //implement destructors.
@@ -20,7 +21,7 @@ namespace db::parser{
 	}
 
 	CreateStatement::CreateStatement(std::string name, std::vector<db::table::Column> &c){
-		tableSchema = std::make_shared<db::table::TableSchema>(name,c);
+		tableSchema = db::semantic::Catalog::getInstance().createTable(name,c);
 	}
 
 

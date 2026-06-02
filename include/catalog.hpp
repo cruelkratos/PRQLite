@@ -1,0 +1,40 @@
+#pragma once
+#include<unordered_map>
+#include<string>
+#include<memory>
+#include<include/table.hpp>
+#include<shared_mutex>
+
+namespace db::semantic{
+	using table_oid_t = uint32_t;
+    using column_oid_t = uint32_t;
+
+
+	class Catalog{
+	private:
+	Catalog();
+	std::unordered_map<std::string, table_oid_t> table_names_;
+	std::unordered_map<table_oid_t, std::shared_ptr<db::table::TableSchema>> tables_;
+	table_oid_t next_table_id_{0};
+
+	mutable std::shared_mutex catalog_mutex;
+
+	//handlers
+	void storage_insertTable(const std::string& name, table_oid_t id, std::shared_ptr<db::table::TableSchema> schema);
+
+	bool storage_tableExists(const std::string& name) const;
+	table_oid_t storage_getTableId(const std::string& name) const;
+	std::shared_ptr<db::table::TableSchema> storage_getTableSchema(table_oid_t table_id) const;
+
+	public:
+	static Catalog& getInstance(); //is thread safe
+	Catalog(const Catalog&) = delete;
+    Catalog& operator=(const Catalog&) = delete;
+
+	//DDL
+	std::shared_ptr<db::table::TableSchema> createTable(const std::string& name, const std::vector<db::table::Column>& columns);
+	
+	table_oid_t getTableId(const std::string& name) const;
+	std::shared_ptr<db::table::TableSchema> getTableSchema(table_oid_t table_id) const;
+	};
+}
