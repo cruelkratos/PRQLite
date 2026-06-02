@@ -6,13 +6,20 @@
 #include<include/table.hpp>
 
 
+namespace db::semantic { class ASTVisitor; }
+
+using table_oid_t = uint32_t;
+
 namespace db::parser {
+	
 	class ASTNode{
 	public:
 		ASTNode(); // make paramaterized constructor.
 		// virtual void parseStatement() = 0;
 		ASTNode* left  = nullptr;
         ASTNode* right = nullptr;
+		table_oid_t tableId;
+		virtual void accept(db::semantic::ASTVisitor& visitor) = 0;
 		virtual ~ASTNode();
 		
 	};
@@ -20,14 +27,17 @@ namespace db::parser {
 	struct BinaryExpr : public ASTNode {
         std::string op;   // "=", "!=", ">", "AND", "OR", etc.
 		// ~BinaryExpr();
+		void accept(db::semantic::ASTVisitor& visitor) override;
     };
 
     struct LiteralExpr : public ASTNode {
         db::lexer::Token value; // NUMBER, STRING, TRUE, FALSE
+		void accept(db::semantic::ASTVisitor& visitor) override;
     };
 
     struct IdentifierExpr : public ASTNode {
         std::string name;
+		void accept(db::semantic::ASTVisitor& visitor) override;
     };
 
 	class Statement : public ASTNode{};
@@ -41,6 +51,7 @@ namespace db::parser {
         std::string orderBy;                    
         std::string orderDir  = "ASC";
         int limitVal          = -1; 
+		void accept(db::semantic::ASTVisitor& visitor) override;
 		~SelectStatement();
 
 	};
@@ -49,12 +60,14 @@ namespace db::parser {
 	public:
 		std::string tableName;
         std::vector<db::lexer::Token> values;
+		void accept(db::semantic::ASTVisitor& visitor) override;
 	};
 
 	class DeleteStatement : public ASTNode{
 	public:
 		std::string tableName;
         ASTNode* whereClause = nullptr;
+		void accept(db::semantic::ASTVisitor& visitor) override;
 		~DeleteStatement();
 	};
 
@@ -63,6 +76,7 @@ namespace db::parser {
 		CreateStatement(std::string name, std::vector<db::table::Column> &c);
 		std::string tableName;
 		std::shared_ptr<db::table::TableSchema> tableSchema;
+		void accept(db::semantic::ASTVisitor& visitor) override;
 		// ~CreateStatement();
  	};
 

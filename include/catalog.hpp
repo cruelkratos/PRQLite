@@ -3,7 +3,7 @@
 #include<string>
 #include<memory>
 #include<include/table.hpp>
-#include<shared_mutex>
+#include<mutex>
 
 namespace db::semantic{
 	using table_oid_t = uint32_t;
@@ -12,12 +12,12 @@ namespace db::semantic{
 
 	class Catalog{
 	private:
-	Catalog();
+	Catalog() = default;
 	std::unordered_map<std::string, table_oid_t> table_names_;
 	std::unordered_map<table_oid_t, std::shared_ptr<db::table::TableSchema>> tables_;
 	table_oid_t next_table_id_{0};
 
-	mutable std::shared_mutex catalog_mutex;
+	mutable std::mutex catalog_mutex;
 
 	//handlers
 	void storage_insertTable(const std::string& name, table_oid_t id, std::shared_ptr<db::table::TableSchema> schema);

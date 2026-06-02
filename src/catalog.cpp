@@ -7,7 +7,7 @@ namespace db::semantic{
 		return instance;
 	}
 	std::shared_ptr<db::table::TableSchema> Catalog::createTable(const std::string& name, const std::vector<db::table::Column>& columns) {
-		std::unique_lock<std::shared_mutex> lock(catalog_mutex);
+		std::unique_lock<std::mutex> lock(catalog_mutex);
 
 		if(storage_tableExists(name)){
 			throw std::runtime_error("SEMANTIC ERROR: two tables with same name attempted to be created.");
@@ -22,7 +22,7 @@ namespace db::semantic{
 	}
 
 	table_oid_t Catalog::getTableId(const std::string& name) const{
-		std::shared_lock<std::shared_mutex> lock(catalog_mutex);
+		std::lock_guard<std::mutex> lock(catalog_mutex);
 
 		if (!storage_tableExists(name)) {
             throw std::runtime_error("DB Error: This Table Doesn't Exist.");
@@ -32,7 +32,7 @@ namespace db::semantic{
 	}
 
 	std::shared_ptr<db::table::TableSchema> Catalog::getTableSchema(table_oid_t table_id) const{
-		std::shared_lock<std::shared_mutex> lock(catalog_mutex);
+		std::lock_guard<std::mutex> lock(catalog_mutex);
 
 		auto schema = storage_getTableSchema(table_id);
         if (schema == nullptr) {

@@ -16,7 +16,7 @@
 
 	class TableSchema{
 		public:
-		TableSchema(table_oid_t id, std::string name, std::vector<Column> &c);
+		TableSchema(table_oid_t id, std::string name, const std::vector<Column> &c);
 		table_oid_t tableId;
 		std::string tableName;
 		std::vector<Column> columns;

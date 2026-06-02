@@ -1,4 +1,5 @@
 #include<include/frontend/parser/AST.hpp>
+#include<frontend/semantic_analyzer.hpp>
 #include<include/catalog.hpp>
 
 namespace db::parser{
@@ -22,6 +23,34 @@ namespace db::parser{
 
 	CreateStatement::CreateStatement(std::string name, std::vector<db::table::Column> &c){
 		tableSchema = db::semantic::Catalog::getInstance().createTable(name,c);
+	}
+
+		void BinaryExpr::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void LiteralExpr::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void IdentifierExpr::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void SelectStatement::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void InsertStatement::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void DeleteStatement::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+
+	void CreateStatement::accept(db::semantic::ASTVisitor& visitor) {
+		visitor.visit(*this);
 	}
 
 
