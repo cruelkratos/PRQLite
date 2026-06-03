@@ -2,6 +2,8 @@
 
 > A lightweight relational database built from scratch in modern C++.
 
+[![CMake Build](https://github.com/cruelkratos/PRQLite/actions/workflows/cmake-build.yml/badge.svg?event=push)](https://github.com/cruelkratos/PRQLite/actions/workflows/cmake-build.yml)
+
 PRQLite is an attempt to make a fully functioning SQL Database in C++ from first principles, while undestanding various systems concepts and database internals.
 
 The goal is not to compete with production databases, but to explore how systems such as SQLite and PostgreSQL work under the hood while building a maintainable and extensible database engine.
