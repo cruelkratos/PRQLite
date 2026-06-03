@@ -20,7 +20,7 @@ namespace db::parser{
 		bool isAtEnd();
 		db::lexer::Token peak();
 		void advance();
-		bool match(const db::lexer::Token &t);
+		bool match(const db::lexer::TokenType t);
 		bool expect(const db::lexer::Token &t);
 		std::vector<db::lexer::Token> tokenStream;
 		void parseStatement(); //sets root node of statement

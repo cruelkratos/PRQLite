@@ -13,7 +13,8 @@ $commonSrcs = @(
     "src\frontend\parser\AST.cpp",
     "src\frontend\lexer.cpp",
     "src\table.cpp",
-    "src\storage.cpp"
+    "src\storage.cpp",
+    "src\catalog.cpp" 
 )
 
 function Compile-Test($testFile) {

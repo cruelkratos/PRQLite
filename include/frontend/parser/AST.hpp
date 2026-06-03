@@ -4,11 +4,12 @@
 #include<memory>
 #include<include/frontend/lexer.hpp>
 #include<include/table.hpp>
+#include<cstdint>
 
 
 namespace db::semantic { class ASTVisitor; }
 
-using table_oid_t = uint32_t;
+using table_oid_t = std::uint32_t;
 
 namespace db::parser {
 	
@@ -37,6 +38,8 @@ namespace db::parser {
 
     struct IdentifierExpr : public ASTNode {
         std::string name;
+		db::table::Column resolvedColumn;
+		bool isResolved = false;
 		void accept(db::semantic::ASTVisitor& visitor) override;
     };
 
@@ -51,6 +54,8 @@ namespace db::parser {
         std::string orderBy;                    
         std::string orderDir  = "ASC";
         int limitVal          = -1; 
+		std::vector<db::table::Column> resolvedColumns; // actual Column objects from schema
+    	int orderByColId = -1;                          
 		void accept(db::semantic::ASTVisitor& visitor) override;
 		~SelectStatement();
 

@@ -1,4 +1,5 @@
 #include<catalog.hpp>
+#include<stdexcept>
 
 namespace db::semantic{
 	
@@ -6,7 +7,7 @@ namespace db::semantic{
 		static Catalog instance;
 		return instance;
 	}
-	std::shared_ptr<db::table::TableSchema> Catalog::createTable(const std::string& name, const std::vector<db::table::Column>& columns) {
+	std::shared_ptr<db::table::TableSchema> Catalog::createTable(const std::string& name, std::vector<db::table::Column>& columns) {
 		std::unique_lock<std::mutex> lock(catalog_mutex);
 
 		if(storage_tableExists(name)){
@@ -14,6 +15,9 @@ namespace db::semantic{
 		}
 
 		auto new_id = next_table_id_++;
+		for (size_t i = 0; i < columns.size(); i++) {
+        	columns[i].colId = next_column_id++;  // global counter in Catalog
+    	}
 		auto new_schema = std::make_shared<db::table::TableSchema>(new_id,name,columns);
 
 		storage_insertTable(name, new_id, new_schema);

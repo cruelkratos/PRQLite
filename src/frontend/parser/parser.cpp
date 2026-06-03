@@ -66,9 +66,10 @@ namespace db::parser{
 		++token_pos;
 	}
 
-	bool Parser::match(const db::lexer::Token &t){
+	bool Parser::match(const db::lexer::TokenType t){
+		if(isAtEnd()) return false;
 		const auto& current = peak();
-		if (current.lexeme == t.lexeme && current.type == t.type) {
+		if (!isAtEnd() && current.type == t) {
 			this->advance();
 			return true;
 		} 
@@ -106,13 +107,13 @@ namespace db::parser{
 	SelectStatement* Parser::parseSelect(){
 		auto* node = new SelectStatement();
 		advance();
-		if(!isAtEnd() && peak().type == db::lexer::TokenType::STAR){
+		if(match(db::lexer::TokenType::STAR)){
 			node->selectStar = true;
-			advance();
+			// advance();
 		} else{
 			node->columns.push_back(parseIdentifier());
-			while(!isAtEnd() && peak().type == db::lexer::TokenType::COMMA){
-				advance();
+			while(match(db::lexer::TokenType::COMMA)){
+				// advance();
 				node->columns.push_back(parseIdentifier());
 			}
 		}
@@ -122,28 +123,30 @@ namespace db::parser{
 		advance();
 		node->tableName = parseIdentifier();
 
-		if (!isAtEnd() && peak().type == db::lexer::TokenType::WHERE) {
-        advance();
+		if (match(db::lexer::TokenType::WHERE)) {
+        // advance();
         node->whereClause = parseExpression();
     	}
 
     
-		if (!isAtEnd() && peak().type == db::lexer::TokenType::ORDER) {
-			advance();
+		if (match(db::lexer::TokenType::ORDER)) {
+			// advance();
 			if (isAtEnd() || peak().type != db::lexer::TokenType::BY)
     		throw std::runtime_error("SYNTAX ERROR: expected BY after ORDER");
 			advance();
 			node->orderBy = parseIdentifier();
-			if (!isAtEnd() && peak().type == db::lexer::TokenType::ASC) {
-				node->orderDir = "ASC"; advance();
-			} else if (!isAtEnd() && peak().type == db::lexer::TokenType::DESC) {
-				node->orderDir = "DESC"; advance();
+			if (match(db::lexer::TokenType::ASC)) {
+				node->orderDir = "ASC"; 
+				// advance();
+			} else if (match(db::lexer::TokenType::DESC)) {
+				node->orderDir = "DESC"; 
+				// advance();
 			}
 		}
 
     
-		if (!isAtEnd() && peak().type == db::lexer::TokenType::LIMIT) {
-			advance();
+		if (match(db::lexer::TokenType::LIMIT)) {
+			// advance();
 			if (isAtEnd() || peak().type != db::lexer::TokenType::NUMBER)
     		throw std::runtime_error("SYNTAX ERROR: expected number after LIMIT");
 			node->limitVal = std::stoi(peak().lexeme);
@@ -161,8 +164,8 @@ namespace db::parser{
 	// or_expr → and_expr ("OR" and_expr)*
 	ASTNode* Parser::parseOrExpr() {
     ASTNode* left = parseAndExpr();
-    while (!isAtEnd() && peak().type == db::lexer::TokenType::OR) {
-        advance();
+    while (match(db::lexer::TokenType::OR)) {
+        // advance();
         auto* node  = new BinaryExpr();
         node->op    = "OR";
         node->left  = left;
@@ -175,7 +178,7 @@ namespace db::parser{
    // and_expr → equality_expr ("AND" equality_expr)*
    ASTNode* Parser::parseAndExpr() {
     ASTNode* left = parseEqualityExpr();
-    while (!isAtEnd() && peak().type == db::lexer::TokenType::AND) {
+    while (match(db::lexer::TokenType::AND)) {
         advance();
         auto* node  = new BinaryExpr();
         node->op    = "AND";
@@ -302,8 +305,8 @@ ASTNode* Parser::parseEqualityExpr() {
 		values.emplace_back(temp);
 		advance();
 
-		while(!isAtEnd() && peak().type == db::lexer::TokenType::COMMA){
-			advance();
+		while(match(db::lexer::TokenType::COMMA)){
+			// advance();
 			auto temp = peak();
 			if(isAtEnd() || !isLiteral(temp.type))
 				throw std::runtime_error("SYNTAX Error: expected literal after ,");
@@ -323,8 +326,8 @@ ASTNode* Parser::parseEqualityExpr() {
 		} else advance();
 		node->tableName = parseIdentifier();
 
-		if (!isAtEnd() && peak().type == db::lexer::TokenType::WHERE) {
-        advance(); // consume WHERE
+		if (match(db::lexer::TokenType::WHERE)) {
+        // advance(); // consume WHERE
         node->whereClause = parseExpression();
     	}
 		return node;
@@ -359,8 +362,8 @@ ASTNode* Parser::parseEqualityExpr() {
 
     columns.push_back(parseColumnDef());
 
-    while (!isAtEnd() && peak().type == db::lexer::TokenType::COMMA) {
-        advance(); // consume ','
+    while (match(db::lexer::TokenType::COMMA)) {
+        // advance(); // consume ','
         columns.push_back(parseColumnDef());
     }
 
@@ -385,7 +388,7 @@ ASTNode* Parser::parseEqualityExpr() {
 
 		db::table::Column col;
 		col.colName = colName;
-		col.type    = colType;
+		col.type    = db::table::tokenToColumnType(colType);
 		return col;
 	}
 

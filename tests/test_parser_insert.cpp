@@ -22,7 +22,7 @@ using namespace db::parser;
 
 void test_insert_basic() {
     Parser p;
-    p.insert("INSERT INTO users VALUES (42, 'Alice', TRUE)");
+    p.insert("INSERT INTO users VALUES (42, \"Alice\", TRUE)");
     p.parse_();
 
     auto* node = dynamic_cast<InsertStatement*>(p.getTree());

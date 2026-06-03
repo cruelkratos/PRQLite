@@ -6,6 +6,7 @@ namespace db {
 
 	DB::DB(){
 		this->_parser = std::make_unique<db::parser::Parser>();
+		this->_semantic_analyzer = std::make_unique<db::semantic::SemanticAnalyzer>();
 		// this->_lexer = std::make_unique<db::lexer::Lexer>
 	}
 
@@ -34,6 +35,10 @@ namespace db {
                 _parser->parse_();
                 db::parser::ASTNode* tree = _parser->getTree();
                 // TODO: pass to executor
+				if(tree == nullptr){
+					std::cout<<"bruh"<<std::endl;
+				}
+				_semantic_analyzer->analyze(tree);
                 std::cout << "OK\n";
             } catch (const std::exception& e) {
                 std::cerr << "Error: " << e.what() << "\n";

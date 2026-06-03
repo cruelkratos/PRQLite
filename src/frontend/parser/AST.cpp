@@ -2,6 +2,7 @@
 #include<frontend/semantic_analyzer.hpp>
 #include<include/catalog.hpp>
 
+
 namespace db::parser{
 //implement destructors.
 
@@ -22,7 +23,9 @@ namespace db::parser{
 	}
 
 	CreateStatement::CreateStatement(std::string name, std::vector<db::table::Column> &c){
-		tableSchema = db::semantic::Catalog::getInstance().createTable(name,c);
+		tableName   = name;
+		// tableSchema = db::semantic::Catalog::getInstance().createTable(name,c);
+		tableSchema = std::make_shared<db::table::TableSchema>(1,name, c);
 	}
 
 		void BinaryExpr::accept(db::semantic::ASTVisitor& visitor) {
