@@ -29,7 +29,7 @@ namespace db::semantic{
 		std::lock_guard<std::mutex> lock(catalog_mutex);
 
 		if (!storage_tableExists(name)) {
-            throw std::runtime_error("DB Error: This Table Doesn't Exist.");
+            throw std::runtime_error("SEMANTIC ERROR: This Table Doesn't Exist.");
         }
 
 		return storage_getTableId(name);
@@ -40,7 +40,7 @@ namespace db::semantic{
 
 		auto schema = storage_getTableSchema(table_id);
         if (schema == nullptr) {
-            throw std::runtime_error("DB Error: This Table Doesn't Exist.");
+            throw std::runtime_error("SEMANTIC ERROR: This Table Doesn't Exist.");
         }
 
         return schema;

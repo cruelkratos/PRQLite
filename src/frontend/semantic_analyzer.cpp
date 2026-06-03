@@ -1,6 +1,8 @@
 #include<include/frontend/semantic_analyzer.hpp>
 #include<table.hpp>
 #include<stdexcept>
+#include<string>
+#include<unordered_set>
 
 namespace db::semantic{
 
@@ -116,8 +118,96 @@ namespace db::semantic{
 	}
 
 	void SemanticAnalyzer::visit(db::parser::CreateStatement& node) { 
+
+		if(node.tableSchema->columns.size()==0){
+			throw std::runtime_error("SEMANTIC ERROR: can't have empty columns");
+		}
+
+		std::unordered_set<std::string> seen;
+
+		for(const auto &col: node.tableSchema->columns){
+			if(seen.find(col.colName)!=seen.end()){
+				throw std::runtime_error("SEMANTIC ERROR: duplicate column name '" + col.colName + 
+                "' in table '" + node.tableName + "'");
+			}
+			seen.insert(col.colName);
+		}
 		node.tableSchema = Catalog::getInstance().createTable(node.tableName, node.tableSchema->columns);
+		node.tableId = node.tableSchema->tableId;
 	}
 
-	// void SemanticAnalyzer::visit(db::parser::CreateStatement& node){}
+	void SemanticAnalyzer::visit(db::parser::DeleteStatement& node){
+		auto t_id = Catalog::getInstance().getTableId(node.tableName);
+        auto t_schema = Catalog::getInstance().getTableSchema(t_id);
+
+		node.tableId = t_id;
+
+		if(node.whereClause != nullptr){
+			this->current_schema_ = t_schema;
+
+			node.whereClause->accept(*this);
+
+			if (this->last_expr_type_ != db::table::ColumnType::BOOL) {
+                throw std::runtime_error("SEMANTIC ERROR: WHERE clause must evaluate to a boolean condition");
+            }
+		}
+		this->current_schema_ = nullptr;
+	}
+
+	// EXPR:
+	void SemanticAnalyzer::visit(db::parser::LiteralExpr& node) {
+        // Set the state variable for the parent to read
+        this->last_expr_type_ = db::table::tokenToColumnType(node.value.type);
+    }
+
+	void SemanticAnalyzer::visit(db::parser::IdentifierExpr& node) {
+        if (!current_schema_) {
+            throw std::runtime_error("INTERNAL ERROR: No schema set for identifier evaluation");
+        }
+
+        for (const auto& col : current_schema_->columns) {
+            if (col.colName == node.name){
+                node.resolvedColumn = col;  // bind
+                node.isResolved     = true;
+                this->last_expr_type_ = col.type; // Pass type up to parent
+                return;
+            }
+        }
+        throw std::runtime_error("SEMANTIC ERROR: column '" + node.name + 
+                                 "' does not exist in table '" + current_schema_->tableName + "'");
+    }
+
+
+	void SemanticAnalyzer::visit(db::parser::BinaryExpr& node) {
+        // 1. Visit left child and grab its type
+        node.left->accept(*this);
+        auto leftType = this->last_expr_type_;
+
+        // 2. Visit right child and grab its type
+        node.right->accept(*this);
+        auto rightType = this->last_expr_type_;
+
+        // 3. AND / OR logic
+        if (node.op == "AND" || node.op == "OR") {
+            if (leftType != db::table::ColumnType::BOOL || rightType != db::table::ColumnType::BOOL) {
+                throw std::runtime_error("SEMANTIC ERROR: AND/OR requires boolean operands");
+            }
+            this->last_expr_type_ = db::table::ColumnType::BOOL;
+            return;
+        }
+
+        // 4. Comparison logic
+        if (node.op == "=" || node.op == "!=" || node.op == ">" || 
+            node.op == ">=" || node.op == "<" || node.op == "<=") {
+            if (leftType != rightType) {
+                throw std::runtime_error("SEMANTIC ERROR: type mismatch in expression — left and right of '" 
+                                         + node.op + "' must be same type");
+            }
+            this->last_expr_type_ = db::table::ColumnType::BOOL;
+            return;
+        }
+
+        throw std::runtime_error("SEMANTIC ERROR: unknown operator '" + node.op + "'");
+    }
+
 }
