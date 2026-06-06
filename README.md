@@ -32,6 +32,7 @@ What does PRQL stand for? well it sounds like a `prequel` to `sequel` but could 
 - Transactions
 - Write-Ahead Logging (WAL)
 - Buffer Pool Manager
+- Make DB MCP Compliant
 
 ## Use of Large Language Models
 I tried to use minimal AI in making this project, i used Gemini 3.1 Pro for deep understanding of DB concepts before implementing and used Claude Sonnet 4.6 for writing tests and filling out mundane code blocks.
