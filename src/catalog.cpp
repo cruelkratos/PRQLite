@@ -77,7 +77,7 @@ namespace db::semantic{
 		try{
 			return table_managers_[table_id].get();
 		}
-		catch(std::runtime_error e){
+		catch(const std::runtime_error &e){
 			throw std::runtime_error("BACKEND ERROR: CAN'T FIND TABLE MANAGER FOR TABLE_ID" + std::to_string(table_id));
 		}
 	}

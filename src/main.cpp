@@ -7,6 +7,7 @@ namespace db {
 	DB::DB(){
 		this->_parser = std::make_unique<db::parser::Parser>();
 		this->_semantic_analyzer = std::make_unique<db::semantic::SemanticAnalyzer>();
+		this->_executor = std::make_unique<db::executor::ExecutorEngine>();
 		// this->_lexer = std::make_unique<db::lexer::Lexer>
 	}
 
@@ -39,7 +40,9 @@ namespace db {
 					std::cout<<"bruh"<<std::endl;
 				}
 				_semantic_analyzer->analyze(tree);
+				_executor->execute(tree);
                 std::cout << "OK\n";
+
             } catch (const std::exception& e) {
                 std::cerr << "Error: " << e.what() << "\n";
 				_parser->reset();

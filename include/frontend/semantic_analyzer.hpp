@@ -2,8 +2,15 @@
 #include<include/frontend/parser/AST.hpp>
 #include<include/catalog.hpp>
 
-namespace db::semantic{
+namespace db::parser{
 
+	class BinaryExpr;
+    class LiteralExpr;
+    class IdentifierExpr;
+    class SelectStatement;
+    class InsertStatement;
+    class DeleteStatement;
+    class CreateStatement;
 	class ASTVisitor{
 		public:
 		virtual ~ASTVisitor() = default;
@@ -16,8 +23,13 @@ namespace db::semantic{
 		virtual void visit(db::parser::CreateStatement& node) =0;
 
 	};
+}
 
-	class SemanticAnalyzer: public ASTVisitor{
+
+namespace db::semantic{
+
+
+	class SemanticAnalyzer: public db::parser::ASTVisitor{
 		public:
 		SemanticAnalyzer() = default;
 		void analyze(db::parser::ASTNode* root);

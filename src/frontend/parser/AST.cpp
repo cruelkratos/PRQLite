@@ -28,31 +28,31 @@ namespace db::parser{
 		tableSchema = std::make_shared<db::table::TableSchema>(1,name, c);
 	}
 
-		void BinaryExpr::accept(db::semantic::ASTVisitor& visitor) {
+		void BinaryExpr::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void LiteralExpr::accept(db::semantic::ASTVisitor& visitor) {
+	void LiteralExpr::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void IdentifierExpr::accept(db::semantic::ASTVisitor& visitor) {
+	void IdentifierExpr::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void SelectStatement::accept(db::semantic::ASTVisitor& visitor) {
+	void SelectStatement::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void InsertStatement::accept(db::semantic::ASTVisitor& visitor) {
+	void InsertStatement::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void DeleteStatement::accept(db::semantic::ASTVisitor& visitor) {
+	void DeleteStatement::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
-	void CreateStatement::accept(db::semantic::ASTVisitor& visitor) {
+	void CreateStatement::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
