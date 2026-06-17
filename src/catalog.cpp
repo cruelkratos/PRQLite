@@ -22,6 +22,7 @@ namespace db::semantic{
 
 		storage_insertTable(name, new_id, new_schema);
 
+
 		return new_schema;
 	}
 
@@ -50,6 +51,7 @@ namespace db::semantic{
 	void Catalog::storage_insertTable(const std::string& name, table_oid_t id, std::shared_ptr<db::table::TableSchema> schema) {
         table_names_[name] = id;
         tables_[id] = schema;
+		table_managers_[id] = std::make_unique<db::memory::TableManager>();
     }
 
     bool Catalog::storage_tableExists(const std::string& name) const {
@@ -69,4 +71,14 @@ namespace db::semantic{
         return it->second;
     }
 
+
+	db::memory::TableManager* Catalog::getTableManager(table_oid_t table_id) {
+		//add a check for if table exists later
+		try{
+			return table_managers_[table_id].get();
+		}
+		catch(std::runtime_error e){
+			throw std::runtime_error("BACKEND ERROR: CAN'T FIND TABLE MANAGER FOR TABLE_ID" + std::to_string(table_id));
+		}
+	}
 }
