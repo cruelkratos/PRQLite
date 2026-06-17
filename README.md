@@ -18,15 +18,15 @@ What does PRQL stand for? well it sounds like a `prequel` to `sequel` but could 
 - Abstract Syntax Tree (AST)
 - Semantic Analysis / Binding
 - Catalog Management
+- In-Memory Storage Engine
 
 ### In Progress
-- In-Memory Storage Engine
 - Query Execution Engine
 - Table Scans
 - Filtering and Projection
+- Persistent Storage
 
 ### Planned
-- Persistent Storage
 - B+ Tree Indexes
 - Query Planner
 - Transactions
