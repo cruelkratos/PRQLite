@@ -41,7 +41,6 @@ namespace db {
 				}
 				_semantic_analyzer->analyze(tree);
 				_executor->execute(tree);
-                std::cout << "OK\n";
 
             } catch (const std::exception& e) {
                 std::cerr << "Error: " << e.what() << "\n";
@@ -51,7 +50,6 @@ namespace db {
             accumulated.clear();
             std::cout << "db> ";
         } else {
-            // multi-line input — show continuation prompt like postgres
             std::cout << "... ";
         }
     }

@@ -4,11 +4,13 @@
 namespace db::memory{
 
 	TableManager::TableManager(){
-		this->_pageList.push_back(std::make_unique<Page>(_pageList.size()));
+		auto page_num = global::page_count.fetch_add(1);
+		this->_pageList.push_back(std::make_unique<Page>(page_num));
+		this->pageNos.fetch_add(1);
 	}
 
 	TableIterator TableManager::begin(){
-		if(_pageList.size()==0){
+		if(pageNos.load()==0){
 			throw std::runtime_error("MEMORY ERROR: No Pages exist");
 		}
 		return TableIterator(*this,0,0);
@@ -16,38 +18,39 @@ namespace db::memory{
 	}
 
 	TableIterator TableManager::end(){
-		if(_pageList.size()==0){
+		if(pageNos.load()==0){
 			throw std::runtime_error("MEMORY ERROR: No Pages exist");
 		}
-		return TableIterator(*this,this->_pageList.size(),0);
+		return TableIterator(*this,pageNos.load(),0);
 		//after last
 	}
 
 
 	void TableManager::createTuple(Tuple& t){
 
-		if (_pageList.empty()) {
+		if (pageNos.load()==0) {
             throw std::runtime_error("STORAGE ERROR: Table has no pages.");
         }
 
 		auto& page = this->_pageList.back();
 		if (page->insertTuple(t)) {
-            t.rid.page_id = _pageList.size() - 1;	
+            t.rid.page_id = pageNos.load() - 1;	
 			return;
         }
 
-		_pageList.push_back(std::make_unique<Page>(_pageList.size()));
+		_pageList.push_back(std::make_unique<Page>(pageNos.load()));
+		pageNos.fetch_add(1);
 		auto& newPage = this->_pageList.back();
 
 		if(newPage->insertTuple(t)){
-			t.rid.page_id = _pageList.size() - 1;
+			t.rid.page_id = pageNos.load() - 1;
 			return ;
 		}
 		throw std::runtime_error("DB Error: Can't insert tuple!");
 	}
 	
 	void TableIterator::advanceToNext(){
-		while(currentPageIdx < manager._pageList.size()){
+		while(currentPageIdx < manager.pageNos.load()){
 			auto& page = manager._pageList[currentPageIdx];
 			while(currentSlotId < page->slotCount){
 				if(page->isSlotValid(currentSlotId)){
@@ -60,7 +63,7 @@ namespace db::memory{
 		}
 	}
 	bool TableIterator::hasNext() const{
-		return currentPageIdx < manager._pageList.size();
+		return currentPageIdx < manager.pageNos.load();
 	}
 
 	Tuple TableIterator::nextTuple() {

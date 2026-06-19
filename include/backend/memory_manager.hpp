@@ -5,11 +5,12 @@
 #include<stdexcept>
 #include<iostream>
 #include<include/table.hpp>
+#include<include/globals.hpp>
 
 namespace db::memory{
 
 	struct RecordID {
-        std::uint32_t page_id;
+        page_id_t page_id;
         std::uint32_t slot_id;
         
         //checking if a tuple hasn't been inserted yet
@@ -37,13 +38,13 @@ namespace db::memory{
 		void deleteTuple(const RecordID &r);
 		Tuple getTuple(std::uint16_t slot_id);
 		bool isSlotValid(std::uint16_t slot_id) const;
-		Page(std::uint32_t pId): pageId(pId){}
+		Page(page_id_t pId): pageId(pId){}
 		
 		private:
 		Page() = delete;
 		std::uint16_t freeSpacePointer = 4096;
 		char data[4096] = {0};
-		std::uint32_t pageId;
+		page_id_t pageId;
 
 	};
 }

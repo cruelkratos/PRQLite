@@ -2,6 +2,7 @@
 #include<include/backend/memory_manager.hpp>
 #include<vector>
 #include<memory>
+#include<include/globals.hpp>
 
 namespace db::memory{
 
@@ -26,6 +27,7 @@ namespace db::memory{
 		private:
 		friend class TableIterator;
 		std::vector<std::unique_ptr<Page>> _pageList;
+		std::atomic<page_id_t> pageNos{0};
 		
 		public:
 		TableManager();
