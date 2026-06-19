@@ -20,6 +20,15 @@ namespace db::executor{
 		virtual ~AbstractExecutor() = default;
 	};
 
+
+	class SelectOperator: public AbstractExecutor{
+		//Simply scan the row and return it back no checks to be done.
+		//give tuple above other operators can check validity/project
+
+		public:
+		SelectOperator(db::parser::ASTNode* select_node, db::memory::TableManager* tm);
+	};
+
 	class InsertOperator : public AbstractExecutor{
 		//iterate over the values in the node passed to the executor.
 		//convert lexeme to actual type.
@@ -27,7 +36,7 @@ namespace db::executor{
 		//do std::memcpy
 		//push into a buffer
 		public:
-		InsertOperator(db::parser::ASTNode* insert_node, db::memory::TableManager* tm) {
+		InsertOperator(db::parser::ASTNode* insert_node, std::shared_ptr<db::memory::TableManager> tm) {
 			node = insert_node;
 			table_manager = tm;
 		}
@@ -37,7 +46,7 @@ namespace db::executor{
 		private:
 		db::memory::Tuple serializeToTuple();
 		bool _hasInserted = false;
-		db::memory::TableManager* table_manager;
+		std::shared_ptr<db::memory::TableManager> table_manager;
 		
 		
 	};

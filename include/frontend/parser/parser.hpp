@@ -6,8 +6,6 @@
 
 namespace db::parser{
 
-	
-
 	class Parser{
 		public:
 		Parser();

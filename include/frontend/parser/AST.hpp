@@ -12,6 +12,27 @@ namespace db::parser { class ASTVisitor; }
 using table_oid_t = std::uint32_t;
 
 namespace db::parser {
+
+
+	class BinaryExpr;
+    class LiteralExpr;
+    class IdentifierExpr;
+    class SelectStatement;
+    class InsertStatement;
+    class DeleteStatement;
+    class CreateStatement;
+	class ASTVisitor{
+		public:
+		virtual ~ASTVisitor() = default;
+		virtual void visit(db::parser::BinaryExpr& node) =0;
+		virtual void visit(db::parser::LiteralExpr& node) =0;
+		virtual void visit(db::parser::IdentifierExpr& node) =0;
+		virtual void visit(db::parser::SelectStatement& node) =0;
+		virtual void visit(db::parser::InsertStatement& node) =0;
+		virtual void visit(db::parser::DeleteStatement& node) =0;
+		virtual void visit(db::parser::CreateStatement& node) =0;
+
+	};
 	
 	class ASTNode{
 	public:

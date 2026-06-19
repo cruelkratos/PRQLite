@@ -2,32 +2,9 @@
 #include<include/frontend/parser/AST.hpp>
 #include<include/catalog.hpp>
 
-namespace db::parser{
-
-	class BinaryExpr;
-    class LiteralExpr;
-    class IdentifierExpr;
-    class SelectStatement;
-    class InsertStatement;
-    class DeleteStatement;
-    class CreateStatement;
-	class ASTVisitor{
-		public:
-		virtual ~ASTVisitor() = default;
-		virtual void visit(db::parser::BinaryExpr& node) =0;
-		virtual void visit(db::parser::LiteralExpr& node) =0;
-		virtual void visit(db::parser::IdentifierExpr& node) =0;
-		virtual void visit(db::parser::SelectStatement& node) =0;
-		virtual void visit(db::parser::InsertStatement& node) =0;
-		virtual void visit(db::parser::DeleteStatement& node) =0;
-		virtual void visit(db::parser::CreateStatement& node) =0;
-
-	};
-}
 
 
 namespace db::semantic{
-
 
 	class SemanticAnalyzer: public db::parser::ASTVisitor{
 		public:

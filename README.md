@@ -25,10 +25,10 @@ What does PRQL stand for? well it sounds like a `prequel` to `sequel` but could 
 - Table Scans
 - Filtering and Projection
 - Persistent Storage
+- Query Planner
 
 ### Planned
 - B+ Tree Indexes
-- Query Planner
 - Transactions
 - Write-Ahead Logging (WAL)
 - Buffer Pool Manager
