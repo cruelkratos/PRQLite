@@ -4,6 +4,7 @@
 #include<optional>
 #include <include/backend/memory_manager.hpp>
 #include<vector>
+#include<iostream>
 #include<cstring>
 #include<include/backend/table_manager.hpp>
 #include<include/frontend/semantic_analyzer.hpp>
@@ -26,7 +27,17 @@ namespace db::executor{
 		//give tuple above other operators can check validity/project
 
 		public:
-		SelectOperator(db::parser::ASTNode* select_node, db::memory::TableManager* tm);
+		SelectOperator(db::parser::ASTNode* select_node, std::shared_ptr<db::memory::TableManager> tm){
+			node = select_node;
+			table_manager = tm;
+		}
+
+		std::optional<db::memory::Tuple> next() override;
+		void init() override;
+
+		private:
+		std::optional<db::memory::TableIterator> it;
+		std::shared_ptr<db::memory::TableManager> table_manager;
 	};
 
 	class InsertOperator : public AbstractExecutor{
@@ -66,7 +77,7 @@ namespace db::executor{
 		void visit(db::parser::BinaryExpr& node) override {}
         void visit(db::parser::LiteralExpr& node) override {}
         void visit(db::parser::IdentifierExpr& node) override {}
-		void visit(db::parser::SelectStatement& node) override {}
+		void visit(db::parser::SelectStatement& node) override;
 
 	};
 

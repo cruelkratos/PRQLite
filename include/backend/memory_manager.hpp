@@ -3,6 +3,8 @@
 #include<cstdint>
 #include<vector>
 #include<stdexcept>
+#include<iostream>
+#include<include/table.hpp>
 
 namespace db::memory{
 
@@ -26,6 +28,7 @@ namespace db::memory{
 		Tuple(std::vector<char> bytes) : data(std::move(bytes)){};
 
 		uint32_t getSize() const { return data.size(); }
+		void print(std::ostream& os, const db::table::TableSchema& schema) const;
 	};
 	class Page{
 		public:

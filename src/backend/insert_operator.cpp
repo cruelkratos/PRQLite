@@ -1,7 +1,7 @@
 #include<include/backend/executor.hpp>
 #include<stdexcept>
 #include<algorithm>
-#include<iostream>
+
 
 namespace db::executor{
 	// InsertOperator::

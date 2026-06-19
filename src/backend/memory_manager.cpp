@@ -1,5 +1,6 @@
 #include<include/backend/memory_manager.hpp>
 #include <cstring>
+#include<iomanip>
 
 namespace db::memory{
 
@@ -18,7 +19,9 @@ namespace db::memory{
 		newSlot.offset = freeSpacePointer;
 		newSlot.size = t.getSize();
 
-		std::memcpy(&data[slotCount] , &newSlot,sizeof(Slot));
+
+		std::uint16_t slotByteOffset = slotCount * sizeof(Slot);
+		std::memcpy(&data[slotByteOffset] , &newSlot,sizeof(Slot));
 		t.rid.slot_id = slotCount++;
 		return true;
 	}
@@ -51,6 +54,7 @@ namespace db::memory{
     		throw std::runtime_error("STORAGE Error: Tuple has been deleted");
         }
 
+
 		std::vector<char> tuple_bytes(slot->size);
 		std::memcpy(tuple_bytes.data(), &data[slot->offset], slot->size);
 
@@ -71,5 +75,29 @@ namespace db::memory{
         const Slot* slot = reinterpret_cast<const Slot*>(&data[slot_byte_position]);
         
         return slot->size > 0;
+    }
+
+	void Tuple::print(std::ostream& os, const db::table::TableSchema& schema) const {
+        uint32_t current_offset = 0;
+            
+        for (const auto& col : schema.columns) {
+            if (col.type == db::table::ColumnType::INT) {
+                int val;
+                std::memcpy(&val, &data[current_offset], sizeof(int));
+                os << std::left << std::setw(15) << val;
+                current_offset += sizeof(int);
+            } 
+            else if (col.type == db::table::ColumnType::BOOL) {
+                bool val;
+                std::memcpy(&val, &data[current_offset], sizeof(bool));
+                os << std::left << std::setw(15) << (val ? "true" : "false");
+                current_offset += sizeof(bool);
+            } 
+            else if (col.type == db::table::ColumnType::TEXT) {
+                std::string val(&data[current_offset]); 
+                os << std::left << std::setw(15) << val;
+                current_offset += 255; 
+            }
+        }
     }
 }
