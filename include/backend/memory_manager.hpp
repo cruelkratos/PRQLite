@@ -7,6 +7,13 @@
 #include<include/table.hpp>
 #include<include/globals.hpp>
 
+
+
+/*
+Core in-memory row and page structures.
+Page organizes tuples into fixed slots within a 4KB block using a free-space pointer—insertions allocate from the bottom and slots are at top.
+*/
+
 namespace db::memory{
 
 	struct RecordID {

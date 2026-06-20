@@ -8,6 +8,11 @@
 #include "include/backend/memory_manager.hpp"
 #include "include/backend/table_manager.hpp"
 
+/*
+Thread-safe singleton registry for all table metadata and storage. Maps table names to OIDs, stores TableSchemas and their corresponding TableManagers. 
+Acts as the single source of truth during semantic analysis and execution—queries and executors look up tables here.
+*/
+
 namespace db::semantic{
 	using table_oid_t = std::uint32_t;
     using column_oid_t = std::uint32_t;

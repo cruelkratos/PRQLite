@@ -4,6 +4,13 @@
 #include<memory>
 #include<include/globals.hpp>
 
+/*
+Manages physical table storage as a sequence of fixed-size pages, and provides sequential iteration over tuples via TableIterator. Iterator state lives on the stack (current page and slot) and advances through valid slots, 
+skipping deleted or invalid ones.
+*/
+
+
+
 namespace db::memory{
 
 	class TableManager;

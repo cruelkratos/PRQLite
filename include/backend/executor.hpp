@@ -10,6 +10,12 @@
 #include<include/frontend/semantic_analyzer.hpp>
 
 
+/*
+Executes parsed SQL statements through a pipeline of chained operators. Each operator pulls tuples from its child operator and applies its Operator. ExecutorEngine drives the whole flow using the visitor pattern on the AST, 
+dispatching to the right operator based on statement type.
+*/
+
+
 namespace db::executor{
 	class AbstractExecutor{
 		protected:

@@ -19,19 +19,20 @@ What does PRQL stand for? well it sounds like a `prequel` to `sequel` but could 
 - Semantic Analysis / Binding
 - Catalog Management
 - In-Memory Storage Engine
+- Table Scans
+- Query Execution Engine
 
 ### In Progress
-- Query Execution Engine
-- Table Scans
 - Filtering and Projection
 - Persistent Storage
 - Query Planner
+- Buffer Pool Manager
 
 ### Planned
 - B+ Tree Indexes
 - Transactions
+- Wire Protocol
 - Write-Ahead Logging (WAL)
-- Buffer Pool Manager
 - Make DB MCP Compliant
 
 ## Use of Large Language Models

@@ -5,7 +5,11 @@
 #include<cstdint>
 #include<stdexcept>
 
-	
+
+/*
+Defines table metadata primitives: Column wraps name, type, and ID; TableSchema groups columns under a table name and ID.
+*/
+
 
 namespace db::table{
 
