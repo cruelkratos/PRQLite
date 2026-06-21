@@ -1,0 +1,32 @@
+.git
+.gitignore
+
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+*.swp
+
+# Database files
+data/
+*.db
+*.wal
+
+# Tests output
+coverage/
+
+# Docker
+Dockerfile.dev

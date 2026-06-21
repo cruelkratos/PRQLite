@@ -1,7 +1,6 @@
 #include<include/backend/disk_manager.hpp>
 
 
-
 namespace db::storage{
 	/// @brief 
 	/// @param filename 
@@ -9,7 +8,9 @@ namespace db::storage{
 		this->file_name = filename;
 		std::filesystem::path projectRoot = PROJECT_ROOT; //defined at compile time.
 
-		std::filesystem::path file = projectRoot / filename;
+		std::filesystem::path db_dir = projectRoot / "data";
+		std::filesystem::create_directories(db_dir);
+		std::filesystem::path file = db_dir / filename;
 		std::string full_path = file.string();
 
 
@@ -50,11 +51,11 @@ namespace db::storage{
 		}
 
 		#else 
-		ssize_t bytes_read = pread(db_file_, page_data, PAGE_SIZE, offset);
-		if (bytes_read == -1) {
+		ssize_t bytes = pread(db_file, frame_buffer, PAGE_SIZE, offset);
+		if (bytes == -1) {
             throw std::runtime_error("STORAGE ERROR: POSIX pread failed.");
         }
-        if (bytes_read != PAGE_SIZE && bytes_read != 0) {
+        if (bytes != PAGE_SIZE && bytes != 0) {
             throw std::runtime_error("STORAGE ERROR: Full page wasn't read.");
         }
 		#endif
@@ -74,7 +75,7 @@ namespace db::storage{
 
 		#else
 
-		ssize_t bytes_written = pwrite(db_file_, page_data, PAGE_SIZE, offset);
+		ssize_t bytes_written = pwrite(db_file, frame_buffer, PAGE_SIZE, offset);
         
         if (bytes_written != PAGE_SIZE) {
             throw std::runtime_error("STORAGE ERROR: POSIX pwrite failed.");

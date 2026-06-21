@@ -35,5 +35,30 @@ What does PRQL stand for? well it sounds like a `prequel` to `sequel` but could 
 - Write-Ahead Logging (WAL)
 - Make DB MCP Compliant
 
+
+
+## Running with Docker
+
+You can run PRQLite directly as a Docker container without installing any dependencies.
+
+### 1. Create a persistent volume
+
+This stores your database files outside the container so they persist across restarts.
+
+```bash
+docker volume create prqlite-data
+```
+
+### 2. Run PRQLite
+
+```bash
+docker run -it \
+    -v prqlite-data:/data \
+    prqlite:latest
+```
+
+The database will automatically create its storage files inside `/data` on first startup. Any data written to the database will remain available even if the container is removed, as long as the `prqlite-data` volume is retained.
+
+
 ## Use of Large Language Models
 I tried to use minimal AI in making this project, i used Gemini 3.1 Pro for deep understanding of DB concepts before implementing and used Claude Sonnet 4.6 for writing tests and filling out mundane code blocks.
