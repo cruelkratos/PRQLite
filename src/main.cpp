@@ -8,6 +8,7 @@ namespace db {
 		this->_parser = std::make_unique<db::parser::Parser>();
 		this->_semantic_analyzer = std::make_unique<db::semantic::SemanticAnalyzer>();
 		this->_executor = std::make_unique<db::executor::ExecutorEngine>();
+		this->_diskmanager = std::make_unique<db::storage::DiskManager>();
 		// this->_lexer = std::make_unique<db::lexer::Lexer>
 	}
 

@@ -7,6 +7,11 @@ file(GLOB_RECURSE DB_SOURCES CONFIGURE_DEPENDS
 
 add_executable(db ${DB_SOURCES})
 
+
+target_compile_definitions(db PRIVATE
+    PROJECT_ROOT="${PROJECT_SOURCE_DIR}"
+)
+
 # Include both project root and include/ so existing includes resolve as-is
 target_include_directories(db PRIVATE
     ${PROJECT_SOURCE_DIR}
