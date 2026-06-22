@@ -34,6 +34,9 @@ namespace db::memory{
 		private:
 		friend class TableIterator;
 		std::vector<std::unique_ptr<Page>> _pageList;
+		//use a table meta data page to get the pagelist indices.
+		//replace pagelist_ logic by querying the read/write page guards
+		//add a way to change metadata page if pages are added/removed 
 		std::atomic<page_id_t> pageNos{0};
 		
 		public:

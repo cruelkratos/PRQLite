@@ -40,11 +40,12 @@ namespace db::storage{
 		bufferPool = new Frame[this->poolSize];
 		diskManager = std::make_unique<DiskManager>();
 		pageTable = std::make_unique<PageTable>();
-		evictable_frames.reserve(this->poolSize);
-		for(int i = 0;i<this->poolSize;i++){
-			evictable_frames.push_back(i);
-			bufferPool[i].frame_id = i;
-		}
+		replacer = std::make_unique<RandomReplacer>();
+		for (frame_id_t i = 0; i < poolSize; i++) {
+            free_list_.push_back(i);
+            bufferPool[i].frame_id = i; 
+        }
+	
 	}
 
 	BufferPoolManager& BufferPoolManager::getInstance() {
@@ -62,8 +63,15 @@ namespace db::storage{
 			return &bufferPool[f];
 		}
 		//Not in Memory must load from disk.
+
+		if (!free_list_.empty()) {
+        	auto out_frame_id = free_list_.front();
+        	free_list_.pop_front();
+        	return &bufferPool[out_frame_id]; 
+    	}
+
 		frame_id_t victim_frame_id;
-		if(!randomEvict(&victim_frame_id)){
+		if(!replacer->Evict(&victim_frame_id)){
 			throw std::runtime_error("OUT OF MEMORY ERROR: All Frames are currently pinned!");
 		}
 		
@@ -78,20 +86,21 @@ namespace db::storage{
 	void BufferPoolManager::unpinFrame(frame_id_t frame_id){
 		this->bufferPool[frame_id].unpin();
 		if(this->bufferPool[frame_id].pinCount.load() == 0){
-			evictable_frames.push_back(frame_id);
+			this->replacer->RecordUnpin(frame_id);
 		}
 	}
 
-	bool BufferPoolManager::randomEvict(frame_id_t * victim_frame_id){
-		if(evictable_frames.empty()){
-			return false;
-		}
-		std::srand(std::time(nullptr));
-		size_t random_index = std::rand()%(evictable_frames.size());
-		*victim_frame_id = evictable_frames[random_index];
-		evictable_frames.erase(evictable_frames.begin() + random_index);
-		return true;
-
+	void BufferPoolManager::pinFrame(frame_id_t frame_id){
+		auto pcount = this->bufferPool[frame_id].pinCount.fetch_add(1);
+		if(pcount == 0) this->replacer->RecordPin(frame_id);
 	}
+
+	ReadPageGuard BufferPoolManager::fetchPage(page_id_t page_id) {
+        return ReadPageGuard(this, page_id);
+    }
+
+    WritePageGuard BufferPoolManager::writePage(page_id_t page_id) {
+        return WritePageGuard(this, page_id);
+    }
 
 }

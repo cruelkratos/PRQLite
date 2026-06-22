@@ -1,15 +1,17 @@
 #pragma once
-#include<atomic>
-#include<cstdint>
-#include<stdexcept>
-#include<memory>
-#include<vector>
+#include <atomic>
+#include <cstdint>
+#include <stdexcept>
+#include <memory>
+#include <vector>
 #include <cstdlib> 
-#include<ctime>
+#include <list>
+#include <ctime>
 #include "include/globals.hpp"
 #include "include/backend/page_table.hpp"
 #include "include/backend/memory_manager.hpp"
 #include "include/backend/disk_manager.hpp"
+#include "include/backend/replacer.hpp"
 
 /*
 Buffer Pool will have const M frames each frame holds a page (or just page memory and we translate it to a page object later). 
@@ -69,20 +71,23 @@ namespace db::storage{
 		size_t poolSize = {M_FRAMES};
 		std::unique_ptr<PageTable> pageTable;
 		std::unique_ptr<DiskManager> diskManager;
-		std::vector<frame_id_t> evictable_frames;
+		std::list<frame_id_t> free_list_;
+		std::unique_ptr<Replacer> replacer;
 		BufferPoolManager();
 		BufferPoolManager(const BufferPoolManager&) = delete;
     	BufferPoolManager& operator=(const BufferPoolManager&) = delete;
     	BufferPoolManager(BufferPoolManager&&) = delete;
     	BufferPoolManager& operator=(BufferPoolManager&&) = delete;
 		Frame * fetchFrame(page_id_t page_id);
+		void unpinFrame(frame_id_t frame_id);
+		void pinFrame(frame_id_t frame_id);
 		friend class ReadPageGuard;
 		friend class WritePageGuard;
 
 
 		public:
-		bool randomEvict(frame_id_t* victim_frame_id);
-		void unpinFrame(frame_id_t frame_id);
+		ReadPageGuard fetchPage(page_id_t page_id);
+		WritePageGuard writePage(page_id_t page_id);
 		static BufferPoolManager& getInstance();
 		~BufferPoolManager();
 
