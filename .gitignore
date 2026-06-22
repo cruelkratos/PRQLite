@@ -1,3 +1,4 @@
 lexer.exe
 build/
 *.exe
+.vscode
