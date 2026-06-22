@@ -10,7 +10,17 @@ Stores and Reads bytes from disk.
 */
 
 #if defined(_WIN32)
-    #include <windows.h>
+    #define WIN32_LEAN_AND_MEAN
+	#define NOMINMAX
+	#include <windows.h>
+
+	#ifdef TRUE
+	#undef TRUE
+	#endif
+
+	#ifdef FALSE
+	#undef FALSE
+	#endif
     typedef HANDLE FileHandle;
 #else
     #include <unistd.h>

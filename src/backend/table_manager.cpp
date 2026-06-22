@@ -1,84 +1,172 @@
-#include<include/backend/table_manager.hpp>
-#include<stdexcept>
+#include <include/backend/table_manager.hpp>
+#include <stdexcept>
+#include <optional>
+#include <cstring>
 
 namespace db::memory{
 
 	TableManager::TableManager(){
-		auto page_num = global::page_count.fetch_add(1);
-		this->_pageList.push_back(std::make_unique<Page>(page_num));
-		this->pageNos.fetch_add(1);
+		this->metadata_page_id = global::page_count.fetch_add(1);
+		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+
+		auto meta_guard = bpm.newPage(this->metadata_page_id);
+		TableMetadata meta; 
+		
+		std::memset(&meta, 0, sizeof(TableMetadata));
+
+		meta.total_pages = 0;
+		meta.total_tuples = 0;
+
+		for (int i = 0; i < 1018; i++) {
+            meta.page_directory[i] = -1;
+        }
+		std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
 	}
 
-	TableIterator TableManager::begin(){
-		if(pageNos.load()==0){
-			throw std::runtime_error("MEMORY ERROR: No Pages exist");
-		}
-		return TableIterator(*this,0,0);
-		//after last
-	}
+	TableIterator TableManager::begin() {
+        db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+        auto meta_guard = bpm.fetchPage(metadata_page_id); 
+        
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
 
-	TableIterator TableManager::end(){
-		if(pageNos.load()==0){
-			throw std::runtime_error("MEMORY ERROR: No Pages exist");
-		}
-		return TableIterator(*this,pageNos.load(),0);
-		//after last
-	}
+        // If the table is completely empty, begin() just equals end()
+        if (meta.total_pages == 0) {
+            return end(); 
+        }
+
+        TableIterator it(*this, 0, 0);
+        
+        it.advanceToNext(); 
+        
+        return it;
+    }
+
+    TableIterator TableManager::end() {
+        db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+        auto meta_guard = bpm.fetchPage(metadata_page_id); 
+        
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+
+        return TableIterator(*this, meta.total_pages, 0);
+    }
 
 
 	void TableManager::createTuple(Tuple& t){
 
-		if (pageNos.load()==0) {
-            throw std::runtime_error("STORAGE ERROR: Table has no pages.");
-        }
+		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
 
-		auto& page = this->_pageList.back();
-		if (page->insertTuple(t)) {
-            t.rid.page_id = pageNos.load() - 1;	
-			return;
-        }
+        auto meta_guard = bpm.writePage(metadata_page_id);
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
 
-		_pageList.push_back(std::make_unique<Page>(pageNos.load()));
-		pageNos.fetch_add(1);
-		auto& newPage = this->_pageList.back();
 
-		if(newPage->insertTuple(t)){
-			t.rid.page_id = pageNos.load() - 1;
+		if(meta.total_pages>0){
+			auto idx = meta.page_directory[meta.total_pages-1];
+			//now get this page.
+			auto page_w = bpm.writePage(idx);
+			db::memory::Page pg(idx);
+			pg.readFromBuffer(page_w.frame_->page);
+
+			if(pg.insertTuple(t)){
+				t.rid.page_id = idx;
+				meta.total_tuples++;
+				pg.writeToBuffer(page_w.frame_->page);
+				std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
+				return;
+			}
+		}
+
+		//now create new page.
+		auto new_idx = global::page_count.fetch_add(1);
+		auto page_w = bpm.newPage(new_idx);
+		db::memory::Page pg(new_idx);
+		pg.readFromBuffer(page_w.frame_->page);
+
+
+		if(pg.insertTuple(t)){
+			t.rid.page_id = new_idx;
+			meta.total_pages++;
+			meta.page_directory[meta.total_pages - 1] = new_idx;
+			meta.total_tuples++;
+			pg.writeToBuffer(page_w.frame_->page);
+			std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
 			return ;
 		}
+
 		throw std::runtime_error("DB Error: Can't insert tuple!");
 	}
 	
-	void TableIterator::advanceToNext(){
-		while(currentPageIdx < manager.pageNos.load()){
-			auto& page = manager._pageList[currentPageIdx];
-			while(currentSlotId < page->slotCount){
-				if(page->isSlotValid(currentSlotId)){
-					return ;
-				}
-				currentSlotId++;
-			}
-			currentPageIdx++;
-			currentSlotId = 0;	
-		}
+	void TableIterator::advanceToNext() {
+    auto& bpm = db::storage::BufferPoolManager::getInstance();
+    while (true) {
+        page_id_t data_page_id;
+        uint32_t total_pages;
+        {
+            auto meta_guard = bpm.fetchPage(manager.metadata_page_id);
+            TableMetadata meta;
+            std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+            total_pages = meta.total_pages;
+            if (currentDirectoryIndex >= total_pages) return;
+            data_page_id = meta.page_directory[currentDirectoryIndex];
+        } 
+
+        {
+            auto data_guard = bpm.fetchPage(data_page_id); // READ
+            db::memory::Page data_page(data_page_id);
+            data_page.readFromBuffer(data_guard.frame_->page);
+
+            while (currentSlotId < data_page.slotCount) {
+                if (data_page.isSlotValid(currentSlotId)) return;
+                currentSlotId++;
+            }
+        } 
+
+        currentDirectoryIndex++;
+        currentSlotId = 0;
+    }
+}
+
+    bool TableIterator::hasNext() const {
+        db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+        auto meta_guard = bpm.fetchPage(manager.metadata_page_id);
+        
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+
+        return currentDirectoryIndex < meta.total_pages;
+    }
+
+    Tuple TableIterator::nextTuple() {
+        if (!hasNext()) {
+            throw std::runtime_error("STORAGE ERROR: No more tuples to read.");
+        }
+
+		std::optional<Tuple> result_tuple;
+
+		{
+			db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+			
+
+			auto meta_guard = bpm.writePage(manager.metadata_page_id);
+			TableMetadata meta;
+			std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+
+			page_id_t data_page_id = meta.page_directory[currentDirectoryIndex];
+
+			auto data_guard = bpm.writePage(data_page_id);
+			db::memory::Page data_page(data_page_id);
+			data_page.readFromBuffer(data_guard.frame_->page);
+
+			result_tuple = data_page.getTuple(currentSlotId);
+
+			currentSlotId++;
 	}
-	bool TableIterator::hasNext() const{
-		return currentPageIdx < manager.pageNos.load();
-	}
+        advanceToNext();
 
-	Tuple TableIterator::nextTuple() {
-		if(!hasNext()){
-			throw std::runtime_error("STORAGE ERROR: No more tuples to read.");
-		}
-
-		auto& page = manager._pageList[currentPageIdx];
-		Tuple t = page->getTuple(currentSlotId);
-
-		currentSlotId++;
-		advanceToNext();
-
-		return t;
-	}
+        return std::move(result_tuple.value());
+    }
 
 	
 }

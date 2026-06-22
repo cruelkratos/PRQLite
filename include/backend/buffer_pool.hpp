@@ -29,6 +29,7 @@ namespace db::storage{
 		public:
 		std::atomic<std::uint32_t> pinCount {0};
 		frame_id_t frame_id;
+		page_id_t page_id{UINT32_MAX};
 		char page[4096];
 		void unpin();
 		bool dirtyBit;
@@ -39,9 +40,9 @@ namespace db::storage{
 	class PageGuard {
 		protected:
 		BufferPoolManager* bpm;
-		Frame* frame_;
-
+		
 		public:
+		Frame* frame_;
 		db::memory::Page* operator->() { return reinterpret_cast< db::memory::Page*>(frame_->page); }
 		// PageGuard(BufferPoolManager* bpm, Frame* frame) : bpm(bpm), frame_(frame) {}
 	};
@@ -59,8 +60,9 @@ namespace db::storage{
 	class WritePageGuard : public PageGuard{
 		private:
 		std::unique_lock<std::shared_mutex> wlock;
-
+		
 		public:
+		WritePageGuard(BufferPoolManager* bpm, Frame* frame);
 		WritePageGuard(BufferPoolManager* bpm, page_id_t page_id);
 		~WritePageGuard();
 	};
@@ -90,6 +92,8 @@ namespace db::storage{
 		WritePageGuard writePage(page_id_t page_id);
 		static BufferPoolManager& getInstance();
 		~BufferPoolManager();
+		Frame* allocateNewFrame(page_id_t new_page_id);
+		WritePageGuard newPage(page_id_t page_id);
 
 	};
 

@@ -16,4 +16,13 @@ namespace db::storage{
 		std::unique_lock lock(mutex_);
 		map_[key] = value;
 	}
+
+	void PageTable::remove(const page_id_t& key){
+		std::unique_lock lock(mutex_);
+		auto it = map_.find(key);
+		if(it == map_.end()){
+			throw std::runtime_error("PAGING ERROR: This key doesn't exist.");
+		}
+		map_.erase(map_.find(key));
+	}
 }

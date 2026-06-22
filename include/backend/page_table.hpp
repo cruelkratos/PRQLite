@@ -21,6 +21,8 @@ namespace db::storage{
 		bool get(const page_id_t& key, frame_id_t& value) const;
 
 		void set(const page_id_t& key, const frame_id_t& value);
+
+		void remove(const page_id_t& key);
 	};
 
 }

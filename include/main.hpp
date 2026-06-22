@@ -4,7 +4,6 @@
 #include<frontend/lexer.hpp>
 #include<memory>
 #include<include/backend/executor.hpp>
-#include<include/backend/disk_manager.hpp>
 
 namespace db {
 
@@ -19,7 +18,6 @@ private:
 std::unique_ptr<db::parser::Parser> _parser;
 std::unique_ptr<db::semantic::SemanticAnalyzer> _semantic_analyzer;
 std::unique_ptr<db::executor::ExecutorEngine> _executor;
-std::unique_ptr<db::storage::DiskManager> _diskmanager;
 // std::unique_ptr<db::lexer::Lexer> _lexer;
 
 };

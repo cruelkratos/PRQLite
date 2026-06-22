@@ -8,8 +8,6 @@ namespace db::executor{
 		InsertOperator insert_plan (&node,table_manager);
 		insert_plan.next();
 
-		while (insert_plan.next().has_value()) {
-        }
 
 	}
 

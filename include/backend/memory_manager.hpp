@@ -16,6 +16,11 @@ Page organizes tuples into fixed slots within a 4KB block using a free-space poi
 
 namespace db::memory{
 
+	struct PageHeader {
+    std::uint16_t slotCount;
+    std::uint16_t freeSpacePointer;
+};
+
 	struct RecordID {
         page_id_t page_id;
         std::uint32_t slot_id;
@@ -45,12 +50,14 @@ namespace db::memory{
 		void deleteTuple(const RecordID &r);
 		Tuple getTuple(std::uint16_t slot_id);
 		bool isSlotValid(std::uint16_t slot_id) const;
-		Page(page_id_t pId): pageId(pId){}
+		Page(page_id_t pId): pageId(pId), slotCount(0) , freeSpacePointer(4096){}
+		char data[4096] = {0};
+		void readFromBuffer(const char* raw_guard_buffer);
+		void writeToBuffer(char* raw_guard_buffer) const;
 		
 		private:
 		Page() = delete;
 		std::uint16_t freeSpacePointer = 4096;
-		char data[4096] = {0};
 		page_id_t pageId;
 
 	};
