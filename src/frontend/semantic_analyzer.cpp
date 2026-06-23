@@ -1,8 +1,8 @@
-#include<include/frontend/semantic_analyzer.hpp>
-#include<table.hpp>
-#include<stdexcept>
-#include<string>
-#include<unordered_set>
+#include "include/frontend/semantic_analyzer.hpp"
+#include "table.hpp"
+#include <stdexcept>
+#include <string>
+#include <unordered_set>
 
 namespace db::semantic{
 
@@ -132,10 +132,6 @@ namespace db::semantic{
 			}
 			seen.insert(col.colName);
 		}
-		node.tableSchema = Catalog::getInstance().createTable(node.tableName, node.tableSchema->columns);
-		node.tableId = node.tableSchema->tableId;
-
-		Catalog::getInstance().flush();
 	}
 
 	void SemanticAnalyzer::visit(db::parser::DeleteStatement& node){

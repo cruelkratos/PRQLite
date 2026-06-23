@@ -1,4 +1,8 @@
 #pragma once
+#include "include/table.hpp"
+#include "include/globals.hpp"
+#include "include/backend/memory_manager.hpp"
+#include "include/backend/table_manager.hpp"
 #include <unordered_map>
 #include <string>
 #include <atomic>
@@ -7,10 +11,7 @@
 #include <fstream>
 #include <cstdint>
 #include <filesystem>
-#include "include/table.hpp"
-#include "include/globals.hpp"
-#include "include/backend/memory_manager.hpp"
-#include "include/backend/table_manager.hpp"
+
 
 /*
 Thread-safe singleton registry for all table metadata and storage. Maps table names to OIDs, stores TableSchemas and their corresponding TableManagers. 
@@ -24,7 +25,11 @@ namespace db::semantic{
 
 	class Catalog{
 	private:
+
 	Catalog();
+	Catalog& operator=(const Catalog&) = delete;
+	Catalog(const Catalog&) = delete;
+	
 	std::unordered_map<std::string, table_oid_t> table_names_;
 	std::unordered_map<table_oid_t, std::shared_ptr<db::table::TableSchema>> tables_;
 	std::unordered_map<table_oid_t, std::shared_ptr<db::memory::TableManager>> table_managers_;
@@ -41,10 +46,9 @@ namespace db::semantic{
 	std::shared_ptr<db::table::TableSchema> storage_getTableSchema(table_oid_t table_id) const;
 	
 	public:
+	~Catalog();
 	inline static std::atomic<page_id_t> page_count;
 	static Catalog& getInstance(); //is thread safe
-	Catalog(const Catalog&) = delete;
-    Catalog& operator=(const Catalog&) = delete;
 
 	//DDL
 	std::shared_ptr<db::table::TableSchema> createTable(const std::string& name, std::vector<db::table::Column>& columns);
@@ -53,7 +57,6 @@ namespace db::semantic{
 	std::shared_ptr<db::table::TableSchema> getTableSchema(table_oid_t table_id) const;
 	std::shared_ptr<db::memory::TableManager> getTableManager(table_oid_t table_id);
 	void flush();
-	~Catalog();
 	};
 
 }

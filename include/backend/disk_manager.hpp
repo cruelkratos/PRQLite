@@ -1,9 +1,9 @@
 #pragma once
+#include "include/globals.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include<include/globals.hpp>
-#include<stdexcept>
+#include <stdexcept>
 
 /*
 Stores and Reads bytes from disk.

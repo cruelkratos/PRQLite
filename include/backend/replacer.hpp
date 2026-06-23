@@ -1,8 +1,8 @@
 #pragma once
+#include "include/globals.hpp"
 #include <vector>
 #include <unordered_map>
 #include <mutex>
-#include "include/globals.hpp"
 
 namespace db::storage {
 
@@ -30,4 +30,6 @@ namespace db::storage {
         void RecordUnpin(frame_id_t frame_id) override;
         void RecordPin(frame_id_t frame_id) override;
     };
+
+	class LRUReplacer;
 }

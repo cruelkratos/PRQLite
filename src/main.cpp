@@ -1,7 +1,7 @@
-#include<include/main.hpp>
-#include<include/frontend/parser/parser.hpp>
-#include<iostream>
-#include<string>
+#include "include/main.hpp"
+#include "include/frontend/parser/parser.hpp"
+#include <iostream>
+#include <string>
 namespace db {
 
 	DB::DB(){

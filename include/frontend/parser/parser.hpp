@@ -1,8 +1,8 @@
 #pragma once
-#include<string>
-#include<vector>
-#include<include/frontend/lexer.hpp>
-#include<include/frontend/parser/AST.hpp>
+#include "include/frontend/parser/AST.hpp"
+#include "include/frontend/lexer.hpp"
+#include <string>
+#include <vector>
 
 namespace db::parser{
 

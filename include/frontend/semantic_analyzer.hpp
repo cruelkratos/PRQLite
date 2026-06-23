@@ -1,6 +1,6 @@
 #pragma once
-#include<include/frontend/parser/AST.hpp>
-#include<include/catalog.hpp>
+#include "include/frontend/parser/AST.hpp"
+#include "include/catalog.hpp"
 
 /*
 Walks AST via visitor pattern using polymorphism to get child type at runtime and according semantic checking logic is executed.

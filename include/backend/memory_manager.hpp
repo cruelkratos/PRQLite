@@ -1,11 +1,11 @@
 #pragma once
 
-#include<cstdint>
-#include<vector>
-#include<stdexcept>
-#include<iostream>
-#include<include/table.hpp>
-#include<include/globals.hpp>
+#include "include/globals.hpp"
+#include "include/table.hpp"
+#include <cstdint>
+#include <vector>
+#include <stdexcept>
+#include <iostream>
 
 
 
@@ -51,12 +51,12 @@ namespace db::memory{
 		Tuple getTuple(std::uint16_t slot_id);
 		bool isSlotValid(std::uint16_t slot_id) const;
 		Page(page_id_t pId): pageId(pId), slotCount(0) , freeSpacePointer(4096){}
-		char data[4096] = {0};
 		void readFromBuffer(const char* raw_guard_buffer);
 		void writeToBuffer(char* raw_guard_buffer) const;
 		
 		private:
 		Page() = delete;
+		char data[4096] = {0};
 		std::uint16_t freeSpacePointer = 4096;
 		page_id_t pageId;
 

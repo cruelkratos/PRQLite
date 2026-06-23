@@ -1,9 +1,9 @@
 #pragma once
-#include<string>
-#include<vector>
-#include<include/frontend/lexer.hpp>
-#include<cstdint>
-#include<stdexcept>
+#include "include/frontend/lexer.hpp"
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <stdexcept>
 
 
 /*
@@ -43,9 +43,9 @@ namespace db::table{
 	class TableSchema{
 		public:
 		TableSchema(table_oid_t id, std::string name, const std::vector<Column> &c);
-	table_oid_t tableId;
-	std::string tableName;
-	std::vector<Column> columns;
+		table_oid_t tableId;
+		std::string tableName;
+		std::vector<Column> columns;
 };
 
 

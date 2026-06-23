@@ -1,13 +1,15 @@
 #pragma once
-#include<include/frontend/parser/AST.hpp>
-#include<memory>
-#include<optional>
-#include <include/backend/memory_manager.hpp>
-#include<vector>
-#include<iostream>
-#include<cstring>
-#include<include/backend/table_manager.hpp>
-#include<include/frontend/semantic_analyzer.hpp>
+#include "include/backend/memory_manager.hpp"
+#include "include/frontend/parser/AST.hpp"
+#include "include/backend/table_manager.hpp"
+#include "include/frontend/semantic_analyzer.hpp"
+#include "include/catalog.hpp"
+#include <memory>
+#include <optional>
+#include <vector>
+#include <iostream>
+#include <cstring>
+
 
 
 /*
@@ -77,7 +79,7 @@ namespace db::executor{
 		}
 		// void visit(db::parser::InsertStatement* node) override;
 		void visit(db::parser::InsertStatement& node) override;
-		void visit(db::parser::CreateStatement& node) override {}
+		void visit(db::parser::CreateStatement& node) override;
         void visit(db::parser::DeleteStatement& node) override {}
 
 		void visit(db::parser::BinaryExpr& node) override {}

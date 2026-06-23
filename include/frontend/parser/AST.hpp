@@ -1,10 +1,10 @@
 #pragma once
-#include<vector>
+#include "include/frontend/lexer.hpp"
+#include "include/table.hpp"
+#include <vector>
 #include <string>
-#include<memory>
-#include<include/frontend/lexer.hpp>
-#include<include/table.hpp>
-#include<cstdint>
+#include <memory>
+#include <cstdint>
 
 
 namespace db::parser { class ASTVisitor; }

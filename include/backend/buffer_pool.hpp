@@ -1,4 +1,9 @@
 #pragma once
+#include "include/globals.hpp"
+#include "include/backend/page_table.hpp"
+#include "include/backend/memory_manager.hpp"
+#include "include/backend/disk_manager.hpp"
+#include "include/backend/replacer.hpp"
 #include <atomic>
 #include <cstdint>
 #include <stdexcept>
@@ -7,11 +12,7 @@
 #include <cstdlib> 
 #include <list>
 #include <ctime>
-#include "include/globals.hpp"
-#include "include/backend/page_table.hpp"
-#include "include/backend/memory_manager.hpp"
-#include "include/backend/disk_manager.hpp"
-#include "include/backend/replacer.hpp"
+
 
 /*
 Buffer Pool will have const M frames each frame holds a page (or just page memory and we translate it to a page object later). 
@@ -19,7 +20,7 @@ Buffer Pool will have const M frames each frame holds a page (or just page memor
 Frame will maintain a pin count to stop frame from being evicted (can get unpinned) frame will also lock page access if needed
 */
 
-const int M_FRAMES = 10;
+const int M_FRAMES = 40;
 
 namespace db::storage{
 	class BufferPoolManager;

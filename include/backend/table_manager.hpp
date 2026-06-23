@@ -1,9 +1,9 @@
 #pragma once
+#include "include/backend/memory_manager.hpp"
+#include "include/backend/buffer_pool.hpp"
+#include "include/globals.hpp"
 #include <vector>
 #include <memory>
-#include "include/backend/memory_manager.hpp"
-#include "include/globals.hpp"
-#include "include/backend/buffer_pool.hpp"
 
 /*
 Manages physical table storage as a sequence of fixed-size pages, and provides sequential iteration over tuples via TableIterator. Iterator state lives on the stack (current page and slot) and advances through valid slots, 

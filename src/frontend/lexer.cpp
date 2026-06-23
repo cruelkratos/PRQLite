@@ -1,7 +1,7 @@
-#include<include/frontend/lexer.hpp>
-#include<string>
+#include "include/frontend/lexer.hpp"
+#include <string>
 #include <cctype>
-#include<iostream>
+#include <iostream>
 #include <stdexcept>
 
 namespace db::lexer{

@@ -1,5 +1,5 @@
-#include<include/backend/executor.hpp>
-#include<iomanip>
+#include "include/backend/executor.hpp"
+#include <iomanip>
 
 namespace db::executor{
 	void ExecutorEngine::visit(db::parser::InsertStatement& node){
@@ -32,6 +32,13 @@ namespace db::executor{
 			++rows;
 		}
 		std::cout<<"("<<rows<<" rows)\n";
-	}	
+	}
+	
+	void ExecutorEngine::visit(db::parser::CreateStatement& node){
+		node.tableSchema = db::semantic::Catalog::getInstance().createTable(node.tableName, node.tableSchema->columns);
+		node.tableId = node.tableSchema->tableId;
+
+		db::semantic::Catalog::getInstance().flush();
+	}
 
 };

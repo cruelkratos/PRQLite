@@ -3,10 +3,10 @@
 //AI WRITTEN TESTS
 
 
+#include "include/frontend/parser/AST.hpp"
+#include "include/frontend/parser/parser.hpp"
 #include <iostream>
 #include <cassert>
-#include "include/frontend/parser/parser.hpp"
-#include "include/frontend/parser/AST.hpp"
 
 using namespace db::parser;
 

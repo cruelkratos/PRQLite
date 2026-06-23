@@ -1,5 +1,5 @@
-#include<catalog.hpp>
-#include<stdexcept>
+#include "include/catalog.hpp"
+#include <stdexcept>
 
 namespace db::semantic{
 	
@@ -169,7 +169,13 @@ namespace db::semantic{
 	}
 
 	Catalog::~Catalog(){
-		this->flush();
+		try{
+			this->flush();
+		}
+		catch(const std::runtime_error &e){
+			std::cerr<<e.what()<<std::endl;
+			throw std::runtime_error("CATALOG ERROR: State of the Table is not stored, data might be lost.");
+		}
 	}
 
 	void Catalog::flush(){
