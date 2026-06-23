@@ -1,4 +1,5 @@
 #include <include/backend/table_manager.hpp>
+#include <include/catalog.hpp>
 #include <stdexcept>
 #include <optional>
 #include <cstring>
@@ -6,7 +7,7 @@
 namespace db::memory{
 
 	TableManager::TableManager(){
-		this->metadata_page_id = global::page_count.fetch_add(1);
+		this->metadata_page_id = db::semantic::Catalog::page_count.fetch_add(1);
 		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
 
 		auto meta_guard = bpm.newPage(this->metadata_page_id);
@@ -79,7 +80,7 @@ namespace db::memory{
 		}
 
 		//now create new page.
-		auto new_idx = global::page_count.fetch_add(1);
+		auto new_idx = db::semantic::Catalog::page_count.fetch_add(1);
 		auto page_w = bpm.newPage(new_idx);
 		db::memory::Page pg(new_idx);
 		pg.readFromBuffer(page_w.frame_->page);

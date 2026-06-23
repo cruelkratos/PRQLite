@@ -82,4 +82,8 @@ namespace db::semantic{
 			throw std::runtime_error("BACKEND ERROR: CAN'T FIND TABLE MANAGER FOR TABLE_ID" + std::to_string(table_id));
 		}
 	}
+
+	Catalog::Catalog(){
+		this->page_count.store(0);
+	}
 }

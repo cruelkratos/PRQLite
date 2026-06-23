@@ -1,10 +1,12 @@
 #pragma once
-#include<unordered_map>
-#include<string>
-#include<memory>
+#include <unordered_map>
+#include <string>
+#include <atomic>
+#include <memory>
+#include <mutex>
+#include <cstdint>
 #include "include/table.hpp"
-#include<mutex>
-#include<cstdint>
+#include "include/globals.hpp"
 #include "include/backend/memory_manager.hpp"
 #include "include/backend/table_manager.hpp"
 
@@ -20,23 +22,24 @@ namespace db::semantic{
 
 	class Catalog{
 	private:
-	Catalog() = default;
+	Catalog();
 	std::unordered_map<std::string, table_oid_t> table_names_;
 	std::unordered_map<table_oid_t, std::shared_ptr<db::table::TableSchema>> tables_;
 	std::unordered_map<table_oid_t, std::shared_ptr<db::memory::TableManager>> table_managers_;
 	table_oid_t next_table_id_{0};
 	column_oid_t next_column_id{0};
-
+	
 	mutable std::mutex catalog_mutex;
-
+	
 	//handlers
 	void storage_insertTable(const std::string& name, table_oid_t id, std::shared_ptr<db::table::TableSchema> schema);
-
+	
 	bool storage_tableExists(const std::string& name) const;
 	table_oid_t storage_getTableId(const std::string& name) const;
 	std::shared_ptr<db::table::TableSchema> storage_getTableSchema(table_oid_t table_id) const;
-
+	
 	public:
+	inline static std::atomic<page_id_t> page_count;
 	static Catalog& getInstance(); //is thread safe
 	Catalog(const Catalog&) = delete;
     Catalog& operator=(const Catalog&) = delete;
