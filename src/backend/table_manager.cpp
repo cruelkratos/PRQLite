@@ -24,6 +24,10 @@ namespace db::memory{
 		std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
 	}
 
+	TableManager::TableManager(page_id_t existing_metadata_page_id) {
+    	this->metadata_page_id = existing_metadata_page_id;
+	}
+
 	TableIterator TableManager::begin() {
         db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
         auto meta_guard = bpm.fetchPage(metadata_page_id); 

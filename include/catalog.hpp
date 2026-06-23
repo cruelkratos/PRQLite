@@ -4,7 +4,9 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <fstream>
 #include <cstdint>
+#include <filesystem>
 #include "include/table.hpp"
 #include "include/globals.hpp"
 #include "include/backend/memory_manager.hpp"
@@ -50,6 +52,8 @@ namespace db::semantic{
 	table_oid_t getTableId(const std::string& name) const;
 	std::shared_ptr<db::table::TableSchema> getTableSchema(table_oid_t table_id) const;
 	std::shared_ptr<db::memory::TableManager> getTableManager(table_oid_t table_id);
+	void flush();
+	~Catalog();
 	};
 
 }

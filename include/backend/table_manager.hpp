@@ -56,6 +56,8 @@ namespace db::memory{
 		TableIterator begin();
 		TableIterator end();
 		void createTuple(Tuple &t);
+		TableManager(page_id_t existing_metadata_page_id);
+		page_id_t getMetadataPageId() const { return metadata_page_id; }
 
 	};
 

@@ -134,6 +134,8 @@ namespace db::semantic{
 		}
 		node.tableSchema = Catalog::getInstance().createTable(node.tableName, node.tableSchema->columns);
 		node.tableId = node.tableSchema->tableId;
+
+		Catalog::getInstance().flush();
 	}
 
 	void SemanticAnalyzer::visit(db::parser::DeleteStatement& node){
