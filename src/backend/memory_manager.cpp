@@ -117,4 +117,11 @@ namespace db::memory{
             }
         }
     }
+
+	bool operator<(const Page& p, int slot_count){
+		return p.slotCount < slot_count;
+	}
+	bool operator<(int slot_count, const Page& p){
+		return slot_count < p.slotCount;
+	}
 }

@@ -33,7 +33,7 @@ namespace db::storage{
 		page_id_t page_id{UINT32_MAX};
 		char page[4096];
 		void unpin();
-		bool dirtyBit;
+		bool dirtyBit{false};
 		std::shared_mutex latch;
 		//maybe add a Last Access Time if we use LRU policy.
 	};
@@ -95,6 +95,7 @@ namespace db::storage{
 		~BufferPoolManager();
 		Frame* allocateNewFrame(page_id_t new_page_id);
 		WritePageGuard newPage(page_id_t page_id);
+		void flushPagestoDisk(); //only to be used if DB is shutting down.
 
 	};
 

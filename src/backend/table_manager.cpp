@@ -122,7 +122,7 @@ namespace db::memory{
             db::memory::Page data_page(data_page_id);
             data_page.readFromBuffer(data_guard.frame_->page);
 
-            while (currentSlotId < data_page.slotCount) {
+            while (currentSlotId < data_page) {
                 if (data_page.isSlotValid(currentSlotId)) return;
                 currentSlotId++;
             }

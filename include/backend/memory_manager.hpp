@@ -45,7 +45,6 @@ namespace db::memory{
 	};
 	class Page{
 		public:
-		std::uint16_t slotCount = 0;
 		bool insertTuple(Tuple &t);
 		void deleteTuple(const RecordID &r);
 		Tuple getTuple(std::uint16_t slot_id);
@@ -53,12 +52,15 @@ namespace db::memory{
 		Page(page_id_t pId): pageId(pId), slotCount(0) , freeSpacePointer(4096){}
 		void readFromBuffer(const char* raw_guard_buffer);
 		void writeToBuffer(char* raw_guard_buffer) const;
+		friend bool operator<(const Page&p , int slot_count_given);
+		friend bool operator<(int slot_count_given, const Page&p);
 		
 		private:
 		Page() = delete;
 		char data[4096] = {0};
-		std::uint16_t freeSpacePointer = 4096;
 		page_id_t pageId;
+		std::uint16_t slotCount = 0;
+		std::uint16_t freeSpacePointer = 4096;
 
 	};
 }

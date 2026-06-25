@@ -15,12 +15,20 @@ namespace db {
     std::string line;
     std::string accumulated;
 
-    std::cout << "db> ";
-    while (std::getline(std::cin, line)) {
+	
+	
+    while (!interrupt) {
+		std::cout << (accumulated.empty() ? "db> " : "... ");
+
+		if(!std::getline(std::cin, line)){
+			std::cin.clear();
+			break;
+		}
+
         if (line == "exit")
             break;
 
-        // check if this line contains the terminator
+        // check if this line contains the terminator	
         bool terminated = false;
         auto pos = line.find(';');
         if (pos != std::string::npos) {
@@ -28,7 +36,7 @@ namespace db {
             terminated = true;
         }
 
-        accumulated += " " + line;
+        accumulated += (accumulated.empty() ? "" : " ") + line;
 
         if (terminated) {
             try {
@@ -42,15 +50,23 @@ namespace db {
 				_semantic_analyzer->analyze(tree);
 				_executor->execute(tree);
 
-            } catch (const std::exception& e) {
+            } catch (const std::runtime_error &e) {
                 std::cerr << "Error: " << e.what() << "\n";
 				_parser->reset();
             }
+			catch(const std::exception &e){
+				std::cerr << "Error: " << e.what() << "\n";
+				_parser->reset();
+			}
+			catch(...){
+				std::cerr<<"Unknown Error Caught"<<"\n";
+				_parser->reset();
+			}
             _parser->reset();
             accumulated.clear();
-            std::cout << "db> ";
+            // std::cout << "db> ";
         } else {
-            std::cout << "... ";
+            // std::cout << "... ";
         }
     }
 
@@ -59,9 +75,21 @@ namespace db {
 
 	DB::~DB(){}
 
+	int DB::connect(){
+		std::signal(SIGINT,DB::handleSignal);
+		auto success =  REPL();
+		std::cout<<"\nClosing DB Connection..."<<std::endl;
+		db::semantic::Catalog::getInstance().flush();
+		db::storage::BufferPoolManager::getInstance().flushPagestoDisk();
+		return success;
+	}
+
+	void DB::handleSignal(int){
+		DB::interrupt = 1;
+	}
 }
 
 int main(int argc, char** argv) {
     db::DB app;
-    return app.REPL();
+    return app.connect();
 }

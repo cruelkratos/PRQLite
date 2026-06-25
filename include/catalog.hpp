@@ -37,6 +37,7 @@ namespace db::semantic{
 	column_oid_t next_column_id{0};
 	
 	mutable std::mutex catalog_mutex;
+	std::atomic<bool> is_dirty{false};
 	
 	//handlers
 	void storage_insertTable(const std::string& name, table_oid_t id, std::shared_ptr<db::table::TableSchema> schema);

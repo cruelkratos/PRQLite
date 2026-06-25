@@ -22,7 +22,7 @@ namespace db::semantic{
 
 		storage_insertTable(name, new_id, new_schema);
 
-
+		this->is_dirty.store(true);
 		return new_schema;
 	}
 
@@ -169,16 +169,21 @@ namespace db::semantic{
 	}
 
 	Catalog::~Catalog(){
-		try{
-			this->flush();
-		}
-		catch(const std::runtime_error &e){
-			std::cerr<<e.what()<<std::endl;
-			throw std::runtime_error("CATALOG ERROR: State of the Table is not stored, data might be lost.");
+		if(!this->is_dirty.load()){
+			try{
+				this->flush();
+			}
+			catch(const std::runtime_error &e){
+				std::cerr << "CRITICAL CATALOG ERROR: " << e.what() << "\n";
+				std::cerr << "FATAL: State of the Catalog was not stored. Data might be lost" << std::endl;
+			}
 		}
 	}
 
 	void Catalog::flush(){
+
+		if (!this->is_dirty.load()) return; 
+
 		std::lock_guard<std::mutex> lock(catalog_mutex);
 		std::filesystem::path projectRoot = PROJECT_ROOT; 
         std::filesystem::path db_dir = projectRoot / "data";
@@ -190,35 +195,42 @@ namespace db::semantic{
             throw std::runtime_error("CATALOG ERROR: Can't Flush to .catalog.db");
         }
 		uint32_t current_pc = page_count.load();
-		out.write(reinterpret_cast<const char*>(&current_pc), sizeof(uint32_t));
-        out.write(reinterpret_cast<const char*>(&next_table_id_), sizeof(table_oid_t));
-        out.write(reinterpret_cast<const char*>(&next_column_id), sizeof(column_oid_t));
+		try{
+			out.write(reinterpret_cast<const char*>(&current_pc), sizeof(uint32_t));
+			out.write(reinterpret_cast<const char*>(&next_table_id_), sizeof(table_oid_t));
+			out.write(reinterpret_cast<const char*>(&next_column_id), sizeof(column_oid_t));
 
-		for (const auto& [name, oid] : this->table_names_) {
-            size_t name_len = name.size();
-            out.write(reinterpret_cast<const char*>(&name_len), sizeof(size_t));
-            out.write(name.data(), name_len);
-		
-            out.write(reinterpret_cast<const char*>(&oid), sizeof(table_oid_t));
-
-            page_id_t metadata_page_id = this->table_managers_[oid]->getMetadataPageId();
-            out.write(reinterpret_cast<const char*>(&metadata_page_id), sizeof(page_id_t));
-            
-            auto schema = this->tables_[oid];
-			uint32_t num_cols = schema->columns.size();
-            out.write(reinterpret_cast<const char*>(&num_cols), sizeof(uint32_t));
+			for (const auto& [name, oid] : this->table_names_) {
+				size_t name_len = name.size();
+				out.write(reinterpret_cast<const char*>(&name_len), sizeof(size_t));
+				out.write(name.data(), name_len);
 			
-			for(const auto& col: schema->columns){
-				out.write(reinterpret_cast<const char*>(&col.colId), sizeof(column_oid_t));
+				out.write(reinterpret_cast<const char*>(&oid), sizeof(table_oid_t));
+
+				page_id_t metadata_page_id = this->table_managers_[oid]->getMetadataPageId();
+				out.write(reinterpret_cast<const char*>(&metadata_page_id), sizeof(page_id_t));
+				
+				auto schema = this->tables_[oid];
+				uint32_t num_cols = schema->columns.size();
+				out.write(reinterpret_cast<const char*>(&num_cols), sizeof(uint32_t));
+				
+				for(const auto& col: schema->columns){
+					out.write(reinterpret_cast<const char*>(&col.colId), sizeof(column_oid_t));
 
 
-				size_t col_name_len = col.colName.size();
-				out.write(reinterpret_cast<const char*>(&col_name_len), sizeof(size_t));
-				out.write(col.colName.data(), col_name_len);
+					size_t col_name_len = col.colName.size();
+					out.write(reinterpret_cast<const char*>(&col_name_len), sizeof(size_t));
+					out.write(col.colName.data(), col_name_len);
 
-				int32_t col_type_int = static_cast<int32_t>(col.type);
-				out.write(reinterpret_cast<const char*>(&col_type_int), sizeof(int32_t));
+					int32_t col_type_int = static_cast<int32_t>(col.type);
+					out.write(reinterpret_cast<const char*>(&col_type_int), sizeof(int32_t));
+				}
 			}
-        }
+		this->is_dirty.store(false);	
+
+		}
+		catch(...){
+			throw std::runtime_error("CATALOG ERROR: Failed to Flush");
+		}
 	}
 }

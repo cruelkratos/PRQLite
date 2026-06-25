@@ -63,11 +63,11 @@ namespace db::storage{
     	return instance;
 	}
 	BufferPoolManager::~BufferPoolManager(){
-		for (frame_id_t i = 0; i < poolSize; i++) {
-        if (bufferPool[i].dirtyBit) {
-            diskManager->writePage(bufferPool[i].page_id, bufferPool[i].page);
-        }
-    }
+		try{
+			this->flushPagestoDisk();
+		}catch(...){
+			std::cerr<<"Critical Error: Pages Might be Corrupted.\n";
+		}
 		delete [] bufferPool;
 	}
 
@@ -134,41 +134,61 @@ namespace db::storage{
 
 
 	Frame* BufferPoolManager::allocateNewFrame(page_id_t new_page_id) {
-    frame_id_t target_frame_id;
+		frame_id_t target_frame_id;
 
-    if (!free_list_.empty()) {
-        target_frame_id = free_list_.front();
-        free_list_.pop_front();
-    } 
-    else {
-        if (!replacer->Evict(&target_frame_id)) {
-            throw std::runtime_error("OUT OF MEMORY ERROR!");
-        }
-        Frame* victim = &bufferPool[target_frame_id];
-        
-        // Save old data if needed
-        if (victim->dirtyBit) {
-            this->diskManager->writePage(victim->page_id, victim->page);
-        }
-        this->pageTable->remove(victim->page_id);
-    }
+		if (!free_list_.empty()) {
+			target_frame_id = free_list_.front();
+			free_list_.pop_front();
+		} 
+		else {
+			if (!replacer->Evict(&target_frame_id)) {
+				throw std::runtime_error("OUT OF MEMORY ERROR!");
+			}
+			Frame* victim = &bufferPool[target_frame_id];
+			
+			// Save old data if needed
+			if (victim->dirtyBit) {
+				this->diskManager->writePage(victim->page_id, victim->page);
+			}
+			this->pageTable->remove(victim->page_id);
+		}
 
-    Frame* new_frame = &bufferPool[target_frame_id];
+		Frame* new_frame = &bufferPool[target_frame_id];
 
 
-    std::memset(new_frame->page, 0, 4096);
+		std::memset(new_frame->page, 0, 4096);
 
-	db::memory::PageHeader header;
-    header.slotCount = 0;
-    header.freeSpacePointer = 4096; 
-    std::memcpy(new_frame->page, &header, sizeof(db::memory::PageHeader));
+		db::memory::PageHeader header;
+		header.slotCount = 0;
+		header.freeSpacePointer = 4096; 
+		std::memcpy(new_frame->page, &header, sizeof(db::memory::PageHeader));
 
-    this->pageTable->set(new_page_id, target_frame_id);
-    new_frame->page_id = new_page_id;
-    new_frame->dirtyBit = true;  
-    new_frame->pinCount.store(1);
+		this->pageTable->set(new_page_id, target_frame_id);
+		new_frame->page_id = new_page_id;
+		new_frame->dirtyBit = true;  
+		new_frame->pinCount.store(1);
 
-    return new_frame;
-}
+		return new_frame;
+	}
+
+	void BufferPoolManager::flushPagestoDisk(){
+		//not to be called unless needed by DB to flush pages in shutdown.
+		//we can assume this is only called if interrupt is raised hence will be called only once.
+
+		for(size_t i = 0; i < this->poolSize; ++i){
+			if(bufferPool[i].dirtyBit){
+				try{
+					diskManager->writePage(bufferPool[i].page_id,bufferPool[i].page);
+					bufferPool[i].dirtyBit = false;
+				}
+				catch(const std::runtime_error &e){
+					std::cerr << "Buffer Pool Error: Failed to flush page " 
+                              << bufferPool[i].page_id << " to disk. Reason: " 
+                              << e.what() << std::endl;
+				}
+			}
+		}
+
+	}
 
 }
