@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <csignal>
 
 
 
@@ -35,15 +36,17 @@ namespace db::executor{
 		//give tuple above other operators can check validity/project
 
 		public:
-		SelectOperator(db::parser::ASTNode* select_node, std::shared_ptr<db::memory::TableManager> tm){
+		SelectOperator(db::parser::ASTNode* select_node, std::shared_ptr<db::memory::TableManager> tm, volatile std::sig_atomic_t* i){
 			node = select_node;
 			table_manager = tm;
+			interrupt = i;
 		}
 
 		std::optional<db::memory::Tuple> next() override;
 		void init() override;
 
 		private:
+		volatile std::sig_atomic_t* interrupt;
 		std::optional<db::memory::TableIterator> it;
 		std::shared_ptr<db::memory::TableManager> table_manager;
 	};
@@ -71,7 +74,10 @@ namespace db::executor{
 	};
 
 	class ExecutorEngine :  public db::parser::ASTVisitor{
+		private:
+		volatile std::sig_atomic_t* interrupt;
 		public:
+		ExecutorEngine(volatile std::sig_atomic_t* i) : interrupt(i){}
 		void execute(db::parser::ASTNode* root){
 			if(root){
 				root->accept(*this);

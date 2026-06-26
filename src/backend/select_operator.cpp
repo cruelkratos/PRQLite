@@ -13,7 +13,7 @@ namespace db::executor{
 	// }
 
 	std::optional<db::memory::Tuple> SelectOperator::next(){
-		if(!it->hasNext()){
+		if(!it->hasNext() || *interrupt){
 			return std::nullopt;
 		}
 		return it->nextTuple();

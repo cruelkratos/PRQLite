@@ -18,7 +18,7 @@ namespace db::executor{
 		auto& catalog = db::semantic::Catalog::getInstance();
 		auto schema = catalog.getTableSchema(node.tableId);
 
-		SelectOperator seq_scan (&node , table_manager);
+		SelectOperator seq_scan (&node, table_manager, this->interrupt);
 		seq_scan.init();
 		for (const auto& col : schema->columns) {
             // Print column names with a fixed width of 15 characters
