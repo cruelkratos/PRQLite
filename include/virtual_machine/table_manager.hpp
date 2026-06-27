@@ -1,5 +1,5 @@
 #pragma once
-#include "include/backend/memory_manager.hpp"
+#include "include/virtual_machine/memory_manager.hpp"
 #include "include/backend/buffer_pool.hpp"
 #include "include/globals.hpp"
 #include <vector>
@@ -45,7 +45,6 @@ namespace db::memory{
 	class TableManager{
 		private:
 		friend class TableIterator;
-		std::vector<std::unique_ptr<Page>> _pageList;
 		//use a table meta data page to get the pagelist indices.
 		//replace pagelist_ logic by querying the read/write page guards
 		//add a way to change metadata page if pages are added/removed 

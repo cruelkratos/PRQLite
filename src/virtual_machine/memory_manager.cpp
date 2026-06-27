@@ -1,4 +1,4 @@
-#include "include/backend/memory_manager.hpp"
+#include "include/virtual_machine/memory_manager.hpp"
 #include <cstring>
 #include <iomanip>
 

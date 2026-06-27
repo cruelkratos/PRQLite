@@ -1,7 +1,7 @@
 #pragma once
 #include "include/globals.hpp"
 #include "include/backend/page_table.hpp"
-#include "include/backend/memory_manager.hpp"
+#include "include/virtual_machine/memory_manager.hpp"
 #include "include/backend/disk_manager.hpp"
 #include "include/backend/replacer.hpp"
 #include <atomic>

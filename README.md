@@ -60,7 +60,11 @@ You can run PRQLite directly as a Docker container without installing any depend
 
 This stores your database files outside the container so they persist across restarts.
 
+```shell
+cd PRQLite
+```
 ```console
+docker build -t prqlite:latest .
 docker volume create prqlite-data
 ```
 

@@ -1,7 +1,7 @@
 #pragma once
-#include "include/backend/memory_manager.hpp"
+#include "include/virtual_machine/memory_manager.hpp"
 #include "include/frontend/parser/AST.hpp"
-#include "include/backend/table_manager.hpp"
+#include "include/virtual_machine/table_manager.hpp"
 #include "include/frontend/semantic_analyzer.hpp"
 #include "include/catalog.hpp"
 #include "include/utils.hpp"

@@ -1,8 +1,8 @@
 #pragma once
 #include "include/table.hpp"
 #include "include/globals.hpp"
-#include "include/backend/memory_manager.hpp"
-#include "include/backend/table_manager.hpp"
+#include "include/virtual_machine/memory_manager.hpp"
+#include "include/virtual_machine/table_manager.hpp"
 #include <unordered_map>
 #include <string>
 #include <atomic>
