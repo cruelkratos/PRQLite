@@ -38,6 +38,7 @@ namespace db::memory{
 		void advanceToNext();
 		TableIterator(const TableManager& m) : manager(m) {advanceToNext();}
 		TableIterator(const TableManager& m , uint32_t dirIndex, std::uint16_t curr_slotId) : manager(m) , currentDirectoryIndex(dirIndex) , currentSlotId(curr_slotId){advanceToNext();}
+		TableIterator(const TableIterator& other) = default;
 
 	};
 

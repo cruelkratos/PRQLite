@@ -35,9 +35,10 @@ Each layer is written from scratch with no external database dependencies.
 - Catalog management
 - Query execution engine (SELECT, INSERT, DELETE, CREATE TABLE)
 - Page-based persistent storage with buffer pool manager
+- Filtering and projection
 
 **In Progress**
-- Filtering and projection
+- ORDER BY and DELETE
 - Query planner
 - Transactions and write-ahead logging (WAL)
 - Test and Benchmark using GTest and Google Benchmark.

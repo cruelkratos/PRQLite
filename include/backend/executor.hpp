@@ -4,12 +4,15 @@
 #include "include/backend/table_manager.hpp"
 #include "include/frontend/semantic_analyzer.hpp"
 #include "include/catalog.hpp"
+#include "include/utils.hpp"
 #include <memory>
 #include <optional>
 #include <vector>
 #include <iostream>
 #include <cstring>
 #include <csignal>
+#include <variant>
+#include <unordered_map>
 
 
 
@@ -20,14 +23,17 @@ dispatching to the right operator based on statement type.
 
 
 namespace db::executor{
+
+	using SQLValue = std::variant<int, bool, std::string>;
 	class AbstractExecutor{
 		protected:
-		std::unique_ptr<AbstractExecutor> _child;
+		AbstractExecutor* _child;
 		db::parser::ASTNode* node;
 		public:
 		virtual void init() = 0;
 		virtual std::optional<db::memory::Tuple> next() = 0; 
 		virtual ~AbstractExecutor() = default;
+		virtual db::table::TableSchema getOutputSchema() const = 0;
 	};
 
 
@@ -44,6 +50,7 @@ namespace db::executor{
 
 		std::optional<db::memory::Tuple> next() override;
 		void init() override;
+		db::table::TableSchema getOutputSchema() const override;
 
 		private:
 		volatile std::sig_atomic_t* interrupt;
@@ -64,6 +71,7 @@ namespace db::executor{
 		}
 		std::optional<db::memory::Tuple> next() override;
 		void init() override {}
+		db::table::TableSchema getOutputSchema() const override{}
 
 		private:
 		db::memory::Tuple serializeToTuple();
@@ -71,6 +79,38 @@ namespace db::executor{
 		std::shared_ptr<db::memory::TableManager> table_manager;
 		
 		
+	};
+
+
+	class ProjectionOperator : public AbstractExecutor{
+		public:
+		ProjectionOperator(db::parser::ASTNode* select_node, AbstractExecutor* child);
+		std::optional<db::memory::Tuple> next() override;
+		void init() override;
+		db::table::TableSchema getOutputSchema() const override { return projected_schema; }
+
+		private:
+		std::vector<db::table::Column> colList;
+		std::vector<std::pair<uint32_t, uint32_t>> projection_offsets;
+		db::table::TableSchema projected_schema{110, "projection", {}};
+	};
+
+	class FilterOperator : public AbstractExecutor{
+		public:
+		FilterOperator(db::parser::ASTNode* select_node, AbstractExecutor* child);
+		std::optional<db::memory::Tuple> next() override;
+		void init() override;
+		db::table::TableSchema getOutputSchema() const override { return child_schema; }
+
+		private:
+		db::parser::ASTNode* whereClause;
+		bool hasClause{false};
+		db::table::TableSchema child_schema{0, "", {}};
+
+		std::unordered_map<std::string, uint32_t> column_offsets;
+        std::unordered_map<std::string, db::table::ColumnType> column_types;
+
+		SQLValue evaluateExpr(db::parser::ASTNode* expr, const db::memory::Tuple& tuple);
 	};
 
 	class ExecutorEngine :  public db::parser::ASTVisitor{
@@ -94,6 +134,7 @@ namespace db::executor{
 		void visit(db::parser::SelectStatement& node) override;
 
 	};
+
 
 
 }

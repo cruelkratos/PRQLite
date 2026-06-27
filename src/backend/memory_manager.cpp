@@ -94,30 +94,6 @@ namespace db::memory{
 		std::memcpy(raw_guard_buffer, this->data, 4096);
     }
 
-	void Tuple::print(std::ostream& os, const db::table::TableSchema& schema) const {
-        uint32_t current_offset = 0;
-            
-        for (const auto& col : schema.columns) {
-            if (col.type == db::table::ColumnType::INT) {
-                int val;
-                std::memcpy(&val, &data[current_offset], sizeof(int));
-                os << std::left << std::setw(15) << val;
-                current_offset += sizeof(int);
-            } 
-            else if (col.type == db::table::ColumnType::BOOL) {
-                bool val;
-                std::memcpy(&val, &data[current_offset], sizeof(bool));
-                os << std::left << std::setw(15) << (val ? "true" : "false");
-                current_offset += sizeof(bool);
-            } 
-            else if (col.type == db::table::ColumnType::TEXT) {
-                std::string val(&data[current_offset]); 
-                os << std::left << std::setw(15) << val;
-                current_offset += 255; 
-            }
-        }
-    }
-
 	bool operator<(const Page& p, int slot_count){
 		return p.slotCount < slot_count;
 	}

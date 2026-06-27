@@ -18,4 +18,9 @@ namespace db::executor{
 		}
 		return it->nextTuple();
 	}
+
+	db::table::TableSchema SelectOperator::getOutputSchema() const{
+		auto schema = db::semantic::Catalog::getInstance().getTableSchema(this->node->tableId);
+		return *schema;
+	}
 }

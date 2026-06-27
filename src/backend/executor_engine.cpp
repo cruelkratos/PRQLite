@@ -20,16 +20,39 @@ namespace db::executor{
 
 		SelectOperator seq_scan (&node, table_manager, this->interrupt);
 		seq_scan.init();
-		for (const auto& col : schema->columns) {
-            // Print column names with a fixed width of 15 characters
-            std::cout << std::left << std::setw(15) << col.colName; 
-        }
-        std::cout << "\n-------------------------------------------------\n";
+
+		FilterOperator filter (&node,&seq_scan);
+		
+		if(node.selectStar){
+			//add where clause logic here!
+			for (const auto& col : schema->columns) {
+				std::cout << std::left << std::setw(15) << col.colName; 
+			}
+			std::cout << "\n-------------------------------------------------\n";
+			int rows = 0;
+			while(auto o_tup = filter.next()){
+				db::utils::printTuple(*o_tup,*schema);
+				std::cout << "\n";
+				++rows;
+			}
+			std::cout<<"("<<rows<<" rows)\n";
+			return;
+		}
+
+		//add where clause logic here!!
+		ProjectionOperator projector(&node, &filter);
+		projector.init();
+
 		int rows = 0;
-		while(auto o_tup = seq_scan.next()){
-			o_tup.value().print(std::cout, *schema);
-			std::cout << "\n";
-			++rows;
+		auto proj_schema = projector.getOutputSchema();
+		for (const auto& col : proj_schema.columns) {
+			std::cout << std::left << std::setw(15) << col.colName; 
+		}
+		std::cout << "\n-------------------------------------------------\n";
+		while(auto o_tup = projector.next()){
+				db::utils::printTuple(*o_tup,projector.getOutputSchema());
+				std::cout << "\n";
+				++rows;
 		}
 		std::cout<<"("<<rows<<" rows)\n";
 	}
