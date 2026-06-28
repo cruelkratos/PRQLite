@@ -57,6 +57,27 @@ namespace db::memory{
         return TableIterator(*this, meta.total_pages, 0);
     }
 
+	void TableManager::deleteTuple(const RecordID& rid){
+		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+
+		auto data_guard = bpm.writePage(rid.page_id);
+        db::memory::Page data_page(rid.page_id);
+		data_page.readFromBuffer(data_guard.frame_->page);
+
+		data_page.deleteTuple(rid);
+		data_page.writeToBuffer(data_guard.frame_->page);
+
+		auto meta_guard = bpm.writePage(this->metadata_page_id);
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+        
+        if (meta.total_tuples > 0) {
+            meta.total_tuples--;
+            std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
+			return;
+        }
+		throw std::runtime_error("Memory Error: Couldn't Update Table Meta Data.");
+	}
 
 	void TableManager::createTuple(Tuple& t){
 
@@ -165,6 +186,8 @@ namespace db::memory{
 			data_page.readFromBuffer(data_guard.frame_->page);
 
 			result_tuple = data_page.getTuple(currentSlotId);
+			result_tuple->rid.page_id = data_page_id;
+			result_tuple->rid.slot_id = currentSlotId;
 
 			currentSlotId++;
 	}

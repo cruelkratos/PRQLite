@@ -101,16 +101,34 @@ namespace db::executor{
 		std::optional<db::memory::Tuple> next() override;
 		void init() override;
 		db::table::TableSchema getOutputSchema() const override { return child_schema; }
+		void setWhereClause(db::parser::ASTNode* _whereClause);
 
 		private:
 		db::parser::ASTNode* whereClause;
 		bool hasClause{false};
+
 		db::table::TableSchema child_schema{0, "", {}};
 
 		std::unordered_map<std::string, uint32_t> column_offsets;
         std::unordered_map<std::string, db::table::ColumnType> column_types;
+		friend class DeleteOperator;
 
 		SQLValue evaluateExpr(db::parser::ASTNode* expr, const db::memory::Tuple& tuple);
+
+		bool consider(const db::memory::Tuple &tuple);
+	};
+
+	class DeleteOperator : public AbstractExecutor{
+		//next here deletes the row and moves next 
+		//child is filter.
+		public:
+		DeleteOperator(db::parser::ASTNode* delete_node, AbstractExecutor* child,std::shared_ptr<db::memory::TableManager> tm);
+		std::optional<db::memory::Tuple> next() override;
+		void init() override;
+		db::table::TableSchema getOutputSchema() const override{}
+
+		private:
+		std::shared_ptr<db::memory::TableManager> table_manager;
 	};
 
 	class ExecutorEngine :  public db::parser::ASTVisitor{
@@ -126,12 +144,12 @@ namespace db::executor{
 		// void visit(db::parser::InsertStatement* node) override;
 		void visit(db::parser::InsertStatement& node) override;
 		void visit(db::parser::CreateStatement& node) override;
-        void visit(db::parser::DeleteStatement& node) override {}
+        void visit(db::parser::DeleteStatement& node) override;
+		void visit(db::parser::SelectStatement& node) override;
 
 		void visit(db::parser::BinaryExpr& node) override {}
         void visit(db::parser::LiteralExpr& node) override {}
         void visit(db::parser::IdentifierExpr& node) override {}
-		void visit(db::parser::SelectStatement& node) override;
 
 	};
 

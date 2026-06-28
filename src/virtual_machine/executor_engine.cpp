@@ -22,8 +22,9 @@ namespace db::executor{
 		seq_scan.init();
 
 		FilterOperator filter (&node,&seq_scan);
-		
+		filter.setWhereClause(node.whereClause);
 		if(node.selectStar){
+			filter.init();
 			//add where clause logic here!
 			for (const auto& col : schema->columns) {
 				std::cout << std::left << std::setw(15) << col.colName; 
@@ -62,6 +63,24 @@ namespace db::executor{
 		node.tableId = node.tableSchema->tableId;
 
 		db::semantic::Catalog::getInstance().flush();
+	}
+
+	void ExecutorEngine::visit(db::parser::DeleteStatement& node){
+		auto table_manager = db::semantic::Catalog::getInstance().getTableManager(node.tableId);
+
+		SelectOperator seq_scan (&node, table_manager, this->interrupt);
+		seq_scan.init();
+
+		FilterOperator filter (&node,&seq_scan);
+		filter.setWhereClause(node.whereClause);
+
+		DeleteOperator deleter (&node,&filter,table_manager);
+		deleter.init();
+		int rows = 0;
+		while(auto d_tup = deleter.next()){
+			++rows;
+		}
+		std::cout<<"("<<rows<<" rows) Affected\n";
 	}
 
 };

@@ -28,8 +28,12 @@ namespace db::executor{
         }
 
 
-		this->whereClause = static_cast<db::parser::SelectStatement*>(node)->whereClause;
+		// this->whereClause = static_cast<db::parser::SelectStatement*>(node)->whereClause;
 		if(this->whereClause != nullptr) this->hasClause = true;
+	}
+
+	void FilterOperator::setWhereClause(db::parser::ASTNode* _whereClause){
+		this->whereClause = _whereClause;
 	}
 
 	std::optional<db::memory::Tuple> FilterOperator::next(){
@@ -38,13 +42,17 @@ namespace db::executor{
 		}
 
 		while(auto tuple = _child->next()){
-			SQLValue result = evaluateExpr(whereClause,*tuple);
-			if (std::holds_alternative<bool>(result) && std::get<bool>(result) == true) {
-                return tuple; 
-            }
+			if(consider(*tuple)){
+				return tuple;
+			}
 		}
 
 		return std::nullopt;
+	}
+
+	bool FilterOperator::consider(const db::memory::Tuple& tuple){
+		SQLValue result = evaluateExpr(whereClause, tuple);
+		return (std::holds_alternative<bool>(result) && std::get<bool>(result));
 	}
 
 
