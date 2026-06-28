@@ -38,14 +38,14 @@ Each layer is written from scratch with no external database dependencies.
 - FILTER and PROJECT and DELETE
 
 **In Progress**
-- ORDER BY
-- Bloom Filter Integration for lookup skips.
+- B+ Tree indexes
 - Transactions and write-ahead logging (WAL)
-- Test and Benchmark using GTest and Google Benchmark.
+- Bloom Filter Integration for lookup skips.
+- ORDER BY
 
 **Planned**
-- B+ Tree indexes
 - Wire protocol
+- Test and Benchmark using GTest and Google Benchmark.
 - MCP compliance
 
 ---
