@@ -2,6 +2,7 @@
 #include "include/virtual_machine/memory_manager.hpp"
 #include "include/backend/buffer_pool.hpp"
 #include "include/globals.hpp"
+#include "bloom_filter.hpp"
 #include <vector>
 #include <memory>
 

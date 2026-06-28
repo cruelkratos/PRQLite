@@ -12,3 +12,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 add_subdirectory(src)
+
+add_subdirectory(bloom_filter)
+target_link_libraries(db PRIVATE BloomFilter)
+
+target_include_directories(db PRIVATE 
+    bloom_filter/include
+)
+
+
