@@ -21,6 +21,7 @@ namespace db::parser {
     class InsertStatement;
     class DeleteStatement;
     class CreateStatement;
+	class CreateIdxStatement;
 	class ASTVisitor{
 		public:
 		virtual ~ASTVisitor() = default;
@@ -31,6 +32,7 @@ namespace db::parser {
 		virtual void visit(db::parser::InsertStatement& node) =0;
 		virtual void visit(db::parser::DeleteStatement& node) =0;
 		virtual void visit(db::parser::CreateStatement& node) =0;
+		virtual void visit (db::parser::CreateIdxStatement& node) =0;
 
 	};
 	
@@ -105,5 +107,14 @@ namespace db::parser {
 		void accept(db::parser::ASTVisitor& visitor) override;
 		// ~CreateStatement();
  	};
+
+	class CreateIdxStatement : public ASTNode{
+		public:
+		CreateIdxStatement(std::string name,std::string idx_name, std::vector<std::string> &c);
+		std::string tableName;
+		std::string idxName;
+		std::vector<std::string> indexColumns;
+		void accept(db::parser::ASTVisitor& visitor) override;
+	};
 
 }

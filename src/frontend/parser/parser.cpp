@@ -49,7 +49,18 @@ namespace db::parser{
 		}
 
 		else if(t.type == db::lexer::TokenType::CREATE){
-			statementTree = parseCreate();
+			//can be create table or create idx.
+			advance();
+			db::lexer::Token t2 = peak();
+			if(t2.type == db::lexer::TokenType::INDEX){
+				statementTree = parseIndex();
+				return;
+			}
+			if(t2.type == db::lexer::TokenType::TABLE){
+				statementTree = parseCreate();
+				return;
+			}
+			throw std::runtime_error("SYNTAX ERROR: Invalid CREATE Syntax.");
 		}
 		else throw std::runtime_error("SYNTAX ERROR: Statement must be CRE/SEL/INS/DEL");
 	}
@@ -250,9 +261,9 @@ namespace db::parser{
 
 	CreateStatement* Parser::parseCreate() {
 		// auto* node = new CreateStatement();
-		advance();
+		// advance();
 		if(isAtEnd() || peak().type!= db::lexer::TokenType::TABLE){
-			throw std::runtime_error("SYNTAX ERROR: expected table after create.");
+			throw std::runtime_error("SYNTAX ERROR: expected table/index after create.");
 		} else advance();
 
 		auto tableName = parseIdentifier();
@@ -268,7 +279,37 @@ namespace db::parser{
     	advance();
 
 		auto* node = new CreateStatement(tableName, columns);
-		node->tableName = tableName;
+		return node;
+	}
+
+	CreateIdxStatement* Parser::parseIndex(){
+		if(isAtEnd() || peak().type!= db::lexer::TokenType::INDEX){
+			throw std::runtime_error("SYNTAX ERROR: expected index/table after create.");
+		} else advance();
+
+		auto idx_name = parseIdentifier();
+
+		if(isAtEnd() || peak().type!= db::lexer::TokenType::ON){
+			throw std::runtime_error("SYNTAX ERROR: expected ON after index name.");
+		} else advance();
+
+		auto tableName = parseIdentifier();
+
+		if (isAtEnd() || peak().type != db::lexer::TokenType::LPAREN)
+        	throw std::runtime_error("SYNTAX ERROR: expected '(' after table name");
+   		advance();
+
+		std::vector<std::string> columns;
+		columns.push_back(parseIdentifier());
+		while(match(db::lexer::TokenType::COMMA)){
+			columns.push_back(parseIdentifier());
+		}
+
+		if (isAtEnd() || peak().type != db::lexer::TokenType::RPAREN)
+        	throw std::runtime_error("SYNTAX ERROR: expected ')' after column definitions");
+    	advance();
+
+		auto* node = new CreateIdxStatement(tableName,idx_name,columns);
 		return node;
 	}
 

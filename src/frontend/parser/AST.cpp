@@ -28,7 +28,13 @@ namespace db::parser{
 		tableSchema = std::make_shared<db::table::TableSchema>(1,name, c);
 	}
 
-		void BinaryExpr::accept(db::parser::ASTVisitor& visitor) {
+	CreateIdxStatement::CreateIdxStatement(std::string name, std::string idx_name, std::vector<std::string> &c){
+		tableName = name;
+		idxName = idx_name;
+		indexColumns = c;
+	}
+
+	void BinaryExpr::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
 
@@ -55,6 +61,8 @@ namespace db::parser{
 	void CreateStatement::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
-
+	void CreateIdxStatement::accept(db::parser::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
 
 }

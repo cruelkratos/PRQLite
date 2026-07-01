@@ -8,13 +8,13 @@ namespace db::lexer{
 	enum class TokenType {
 
 		//DDL
-		CREATE,TABLE,
+		CREATE,TABLE,INDEX,
 
         // DML
         SELECT, INSERT, UPDATE, DELETE,
         
         // Clauses
-        FROM, WHERE, GROUP, BY, ORDER, HAVING, LIMIT,
+        FROM, WHERE, GROUP, BY, ORDER, HAVING, LIMIT, ON,
         
         // Logical
         AND, OR, NOT,

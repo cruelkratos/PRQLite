@@ -13,6 +13,7 @@ namespace db::lexer{
 		//DDL
 		  {"CREATE", TokenType::CREATE}, {"create", TokenType::CREATE},
 		  {"TABLE", TokenType::TABLE}, {"table", TokenType::TABLE},
+		  {"INDEX", TokenType::INDEX}, {"index", TokenType::INDEX},
           // DML
           {"SELECT", TokenType::SELECT}, {"select", TokenType::SELECT},
           {"INSERT", TokenType::INSERT}, {"insert", TokenType::INSERT},
@@ -27,6 +28,7 @@ namespace db::lexer{
           {"ORDER",  TokenType::ORDER},  {"order",  TokenType::ORDER},
           {"HAVING", TokenType::HAVING}, {"having", TokenType::HAVING},
           {"LIMIT",  TokenType::LIMIT},  {"limit",  TokenType::LIMIT},
+		  {"ON",  TokenType::ON},  {"on",  TokenType::ON},
 
           // Logical and Misc
           {"AND",    TokenType::AND},    {"and",    TokenType::AND},

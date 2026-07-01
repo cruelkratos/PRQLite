@@ -208,4 +208,27 @@ namespace db::semantic{
         throw std::runtime_error("SEMANTIC ERROR: unknown operator '" + node.op + "'");
     }
 
+	void SemanticAnalyzer::visit(db::parser::CreateIdxStatement& node){
+		if(node.indexColumns.size() == 0){
+			throw std::runtime_error("SEMANTIC ERROR: can't create index without columns");
+		}
+
+		auto t_id = Catalog::getInstance().getTableId(node.tableName);
+        auto t_schema = Catalog::getInstance().getTableSchema(t_id);
+
+		node.tableId = t_id;
+
+		for(auto& c: node.indexColumns){
+			bool exists = false;
+			for(auto &t_c : t_schema->columns){
+				if(c==t_c.colName){
+					exists = true;
+					break;
+				}
+			}
+			if(!exists) throw std::runtime_error("SEMANTIC ERROR: column " + c + " doesn't exist in table " + node.tableName);
+		}
+
+	}
+
 }

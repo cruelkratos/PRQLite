@@ -26,6 +26,7 @@ namespace db::parser{
 		InsertStatement* parseInsert();
 		DeleteStatement* parseDelete();
 		CreateStatement* parseCreate();
+		CreateIdxStatement* parseIndex();
 		std::vector<db::table::Column> parseColumnDefs();
 		db::table::Column parseColumnDef();
 		ASTNode* parseExpression();
