@@ -131,6 +131,9 @@ namespace db::executor{
 		std::shared_ptr<db::memory::TableManager> table_manager;
 	};
 
+	class IndexCreator : public AbstractExecutor{};
+	class SearchIndex : public AbstractExecutor{};
+
 	class ExecutorEngine :  public db::parser::ASTVisitor{
 		private:
 		volatile std::sig_atomic_t* interrupt;
@@ -146,7 +149,7 @@ namespace db::executor{
 		void visit(db::parser::CreateStatement& node) override;
         void visit(db::parser::DeleteStatement& node) override;
 		void visit(db::parser::SelectStatement& node) override;
-		void visit(db::parser::CreateIdxStatement& node) override {}
+		void visit(db::parser::CreateIdxStatement& node) override;
 
 		void visit(db::parser::BinaryExpr& node) override {}
         void visit(db::parser::LiteralExpr& node) override {}

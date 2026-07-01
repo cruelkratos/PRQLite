@@ -83,4 +83,10 @@ namespace db::executor{
 		std::cout<<"("<<rows<<" rows) Affected\n";
 	}
 
+
+	void ExecutorEngine::visit(db::parser::CreateIdxStatement& node){
+		
+	}
+
+
 };
