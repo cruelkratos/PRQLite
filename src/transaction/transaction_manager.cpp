@@ -1,10 +1,13 @@
 #include "include/transaction/transaction_manager.hpp"
+#include "include/backend/buffer_pool.hpp"
+#include "include/virtual_machine/table_manager.hpp"
 
 #include <stdexcept>
 
 namespace db::transaction{
 
-	TransactionManager::TransactionManager() = default;
+	TransactionManager::TransactionManager()
+		: _wal(&db::recovery::WriteAheadLog::getInstance()){}
 
 	TransactionManager& TransactionManager::current(){
 		static thread_local TransactionManager manager;
@@ -29,8 +32,10 @@ namespace db::transaction{
 		const auto transactionId = _context.transactionId;
 		if(_wal){
 			_wal->appendCommit(transactionId);
-			_wal->flush();
 		}
+		undo_actions_.clear();
+		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted();
+		db::storage::BufferPoolManager::getInstance().flushCommittedPagestoDisk();
 		_context = {};
 		return {transactionId, _context.state, "COMMIT"};
 	}
@@ -38,10 +43,15 @@ namespace db::transaction{
 	TransactionResult TransactionManager::rollback(){
 		ensureActive("ROLLBACK");
 		const auto transactionId = _context.transactionId;
+		for(auto it = undo_actions_.rbegin(); it != undo_actions_.rend(); ++it){
+			(*it)();
+		}
+		undo_actions_.clear();
 		if(_wal){
 			_wal->appendRollback(transactionId);
-			_wal->flush();
 		}
+		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted();
+		db::storage::BufferPoolManager::getInstance().flushCommittedPagestoDisk();
 		_context = {};
 		return {transactionId, _context.state, "ROLLBACK"};
 	}
@@ -68,6 +78,27 @@ namespace db::transaction{
 
 	void TransactionManager::setWriteAheadLog(db::recovery::WriteAheadLog* wal){
 		_wal = wal;
+	}
+
+	void TransactionManager::recordInsert(std::shared_ptr<db::memory::TableManager> tableManager, const db::memory::Tuple& tuple){
+		ensureActive("INSERT");
+		if(_wal){
+			_wal->appendInsert(_context.transactionId, tuple);
+		}
+		auto rid = tuple.rid;
+		undo_actions_.push_back([tableManager, rid]{
+			tableManager->deleteTuple(rid);
+		});
+	}
+
+	void TransactionManager::recordDelete(std::shared_ptr<db::memory::TableManager> tableManager, const db::memory::Tuple& tuple){
+		ensureActive("DELETE");
+		if(_wal){
+			_wal->appendDelete(_context.transactionId, tuple);
+		}
+		undo_actions_.push_back([tableManager, tuple]{
+			tableManager->restoreTuple(tuple);
+		});
 	}
 
 	void TransactionManager::ensureActive(const char* action) const{

@@ -41,6 +41,27 @@ namespace db::memory{
 		slot->offset = 0;
 
 	}
+
+	void Page::restoreTuple(const Tuple& t){
+		constexpr uint16_t HEADER_SIZE = sizeof(PageHeader);
+		if(t.rid.slot_id >= slotCount){
+			throw std::runtime_error("DB Error: Invalid Page Restore");
+		}
+
+		uint16_t slotByteOffset = HEADER_SIZE + t.rid.slot_id * sizeof(Slot);
+		Slot* slot = reinterpret_cast<Slot*>(&data[slotByteOffset]);
+		if (!(slot->size == 0 && slot->offset == 0)) {
+    		throw std::runtime_error("DB Error: Restore target slot is not deleted");
+        }
+		if(t.getSize() > freeSpacePointer - (HEADER_SIZE + slotCount * sizeof(Slot))){
+			throw std::runtime_error("DB Error: Not enough space to restore tuple");
+		}
+
+		freeSpacePointer -= t.getSize();
+		std::memcpy(&data[freeSpacePointer], t.data.data(), t.getSize());
+		slot->offset = freeSpacePointer;
+		slot->size = t.getSize();
+	}
 	
 	Tuple Page::getTuple(std::uint16_t slot_id){
 		constexpr uint16_t HEADER_SIZE = sizeof(PageHeader);

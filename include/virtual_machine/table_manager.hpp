@@ -58,6 +58,7 @@ namespace db::memory{
 		TableIterator end();
 		void createTuple(Tuple &t);
 		void deleteTuple(const RecordID& r);
+		void restoreTuple(const Tuple& t);
 		TableManager(page_id_t existing_metadata_page_id);
 		page_id_t getMetadataPageId() const { return metadata_page_id; }
 

@@ -51,6 +51,7 @@ namespace db::executor{
 		db::memory::Tuple physical_tuple = serializeToTuple();
 		try{
 			table_manager->createTuple(physical_tuple);
+			db::transaction::TransactionManager::current().recordInsert(table_manager, physical_tuple);
 		}
 		catch(const std::runtime_error& e){
 			std::cerr<<"EXECUTOR ERROR: CANT ADD TUPLE"<<std::endl;

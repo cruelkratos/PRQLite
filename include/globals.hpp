@@ -6,6 +6,8 @@
 
 using page_id_t = std::uint32_t;
 using frame_id_t = std::uint32_t;
+using transaction_id_t = std::uint32_t;
+using lsn_t = std::uint32_t;
 inline std::string db_filename = "prqlite.db";
 inline const int PAGE_SIZE = 4096;
 

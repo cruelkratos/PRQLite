@@ -1,12 +1,12 @@
 #pragma once
 
+#include "include/globals.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
 
 namespace db::transaction{
 
-	using transaction_id_t = std::uint32_t;
 
 	enum class TransactionState{
 		Idle,

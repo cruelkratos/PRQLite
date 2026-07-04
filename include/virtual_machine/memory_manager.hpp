@@ -45,6 +45,7 @@ namespace db::memory{
 		public:
 		bool insertTuple(Tuple &t);
 		void deleteTuple(const RecordID &r);
+		void restoreTuple(const Tuple& t);
 		Tuple getTuple(std::uint16_t slot_id);
 		bool isSlotValid(std::uint16_t slot_id) const;
 		Page(page_id_t pId): pageId(pId), slotCount(0) , freeSpacePointer(4096){}

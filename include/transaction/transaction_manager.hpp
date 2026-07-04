@@ -3,6 +3,15 @@
 #include "include/transaction/transaction_context.hpp"
 #include "include/recovery/log_manager.hpp"
 
+#include <functional>
+#include <memory>
+#include <vector>
+
+namespace db::memory{
+	class TableManager;
+	class Tuple;
+}
+
 namespace db::transaction{
 
 	class TransactionManager{
@@ -25,6 +34,8 @@ namespace db::transaction{
 		bool hasActiveTransaction() const;
 		const TransactionContext& context() const;
 		void setWriteAheadLog(db::recovery::WriteAheadLog* wal);
+		void recordInsert(std::shared_ptr<db::memory::TableManager> tableManager, const db::memory::Tuple& tuple);
+		void recordDelete(std::shared_ptr<db::memory::TableManager> tableManager, const db::memory::Tuple& tuple);
 
 	private:
 		TransactionManager();
@@ -33,5 +44,6 @@ namespace db::transaction{
 		TransactionContext _context{};
 		transaction_id_t _nextTransactionId{1};
 		db::recovery::WriteAheadLog* _wal{nullptr};
+		std::vector<std::function<void()>> undo_actions_;
 	};
 }

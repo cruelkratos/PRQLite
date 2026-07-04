@@ -1,4 +1,6 @@
 #include "include/backend/buffer_pool.hpp"
+#include "include/recovery/log_manager.hpp"
+#include "include/transaction/transaction_manager.hpp"
 #include <cstring>
 namespace db::storage{
 
@@ -41,6 +43,7 @@ namespace db::storage{
 	WritePageGuard::~WritePageGuard(){
 		if(frame_ != nullptr){
 			frame_->dirtyBit = true;
+			frame_->committedDirty = !db::transaction::TransactionManager::current().hasActiveTransaction();
 			bpm->unpinFrame(frame_->frame_id);
 		}
 	}
@@ -51,6 +54,7 @@ namespace db::storage{
 		diskManager = std::make_unique<DiskManager>();
 		pageTable = std::make_unique<PageTable>();
 		replacer = std::make_unique<RandomReplacer>();
+		db::recovery::WriteAheadLog::getInstance();
 		for (frame_id_t i = 0; i < poolSize; i++) {
             free_list_.push_back(i);
             bufferPool[i].frame_id = i; 
@@ -64,6 +68,7 @@ namespace db::storage{
 	}
 	BufferPoolManager::~BufferPoolManager(){
 		try{
+			db::recovery::WriteAheadLog::getInstance().flush();
 			this->flushPagestoDisk();
 		}catch(...){
 			std::cerr<<"Critical Error: Pages Might be Corrupted.\n";
@@ -93,7 +98,12 @@ namespace db::storage{
        		}
 			Frame* victim = &bufferPool[f];
 			if (victim->dirtyBit) {
-            this->diskManager->writePage(victim->page_id,victim->page); //FIXXXXX
+				if(!victim->committedDirty){
+					throw std::runtime_error("STORAGE ERROR: Can't evict uncommitted dirty page.");
+				}
+            	this->diskManager->writePage(victim->page_id,victim->page);
+				victim->dirtyBit = false;
+				victim->committedDirty = false;
         	}
 			this->pageTable->remove(victim->page_id);
 		}
@@ -106,6 +116,7 @@ namespace db::storage{
 		this->diskManager->readPage(page_id, new_frame->page);
 		this->pageTable->set(page_id, f);
 		new_frame->dirtyBit = false;
+		new_frame->committedDirty = false;
 		new_frame->pinCount.store(1);
 		new_frame->page_id = page_id;
 
@@ -148,7 +159,12 @@ namespace db::storage{
 			
 			// Save old data if needed
 			if (victim->dirtyBit) {
+				if(!victim->committedDirty){
+					throw std::runtime_error("STORAGE ERROR: Can't evict uncommitted dirty page.");
+				}
 				this->diskManager->writePage(victim->page_id, victim->page);
+				victim->dirtyBit = false;
+				victim->committedDirty = false;
 			}
 			this->pageTable->remove(victim->page_id);
 		}
@@ -166,6 +182,7 @@ namespace db::storage{
 		this->pageTable->set(new_page_id, target_frame_id);
 		new_frame->page_id = new_page_id;
 		new_frame->dirtyBit = true;  
+		new_frame->committedDirty = !db::transaction::TransactionManager::current().hasActiveTransaction();
 		new_frame->pinCount.store(1);
 
 		return new_frame;
@@ -177,9 +194,13 @@ namespace db::storage{
 
 		for(size_t i = 0; i < this->poolSize; ++i){
 			if(bufferPool[i].dirtyBit){
+				if(!bufferPool[i].committedDirty){
+					continue;
+				}
 				try{
 					diskManager->writePage(bufferPool[i].page_id,bufferPool[i].page);
 					bufferPool[i].dirtyBit = false;
+					bufferPool[i].committedDirty = false;
 				}
 				catch(const std::runtime_error &e){
 					std::cerr << "Buffer Pool Error: Failed to flush page " 
@@ -189,6 +210,18 @@ namespace db::storage{
 			}
 		}
 
+	}
+
+	void BufferPoolManager::markDirtyPagesCommitted(){
+		for(size_t i = 0; i < this->poolSize; ++i){
+			if(bufferPool[i].dirtyBit){
+				bufferPool[i].committedDirty = true;
+			}
+		}
+	}
+
+	void BufferPoolManager::flushCommittedPagestoDisk(){
+		flushPagestoDisk();
 	}
 
 }

@@ -1,12 +1,36 @@
 #include "include/virtual_machine/executor.hpp"
+#include <functional>
 #include <iomanip>
 
 namespace db::executor{
-	void ExecutorEngine::visit(db::parser::InsertStatement& node){
-		auto table_manager = db::semantic::Catalog::getInstance().getTableManager(node.tableId);
+	namespace{
+		void runWriteStatement(db::transaction::TransactionManager& transaction_manager, const std::function<void()>& action){
+			const bool auto_transaction = !transaction_manager.hasActiveTransaction();
+			if(auto_transaction){
+				transaction_manager.begin();
+			}
+			try{
+				action();
+				if(auto_transaction){
+					transaction_manager.commit();
+				}
+			}
+			catch(...){
+				if(auto_transaction && transaction_manager.hasActiveTransaction()){
+					transaction_manager.rollback();
+				}
+				throw;
+			}
+		}
+	}
 
-		InsertOperator insert_plan (&node,table_manager);
-		insert_plan.next();
+	void ExecutorEngine::visit(db::parser::InsertStatement& node){
+		runWriteStatement(transaction_manager, [&]{
+			auto table_manager = db::semantic::Catalog::getInstance().getTableManager(node.tableId);
+
+			InsertOperator insert_plan (&node,table_manager);
+			insert_plan.next();
+		});
 
 
 	}
@@ -66,21 +90,23 @@ namespace db::executor{
 	}
 
 	void ExecutorEngine::visit(db::parser::DeleteStatement& node){
-		auto table_manager = db::semantic::Catalog::getInstance().getTableManager(node.tableId);
+		runWriteStatement(transaction_manager, [&]{
+			auto table_manager = db::semantic::Catalog::getInstance().getTableManager(node.tableId);
 
-		SelectOperator seq_scan (&node, table_manager, this->interrupt);
-		seq_scan.init();
+			SelectOperator seq_scan (&node, table_manager, this->interrupt);
+			seq_scan.init();
 
-		FilterOperator filter (&node,&seq_scan);
-		filter.setWhereClause(node.whereClause);
+			FilterOperator filter (&node,&seq_scan);
+			filter.setWhereClause(node.whereClause);
 
-		DeleteOperator deleter (&node,&filter,table_manager);
-		deleter.init();
-		int rows = 0;
-		while(auto d_tup = deleter.next()){
-			++rows;
-		}
-		std::cout<<"("<<rows<<" rows) Affected\n";
+			DeleteOperator deleter (&node,&filter,table_manager);
+			deleter.init();
+			int rows = 0;
+			while(auto d_tup = deleter.next()){
+				++rows;
+			}
+			std::cout<<"("<<rows<<" rows) Affected\n";
+		});
 	}
 
 

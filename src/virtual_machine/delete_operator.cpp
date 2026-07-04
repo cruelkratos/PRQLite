@@ -16,6 +16,7 @@ namespace db::executor{
 		if(!tuple) return std::nullopt;
 		try{
 			this->table_manager->deleteTuple(tuple->rid);
+			db::transaction::TransactionManager::current().recordDelete(table_manager, *tuple);
 		} catch(...){
 			throw std::runtime_error("EXECUTOR ERROR: Delete Operation Failed.");
 		}

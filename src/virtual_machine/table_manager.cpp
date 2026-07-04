@@ -79,6 +79,22 @@ namespace db::memory{
 		throw std::runtime_error("Memory Error: Couldn't Update Table Meta Data.");
 	}
 
+	void TableManager::restoreTuple(const Tuple& t){
+		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();
+
+		auto data_guard = bpm.writePage(t.rid.page_id);
+        db::memory::Page data_page(t.rid.page_id);
+		data_page.readFromBuffer(data_guard.frame_->page);
+		data_page.restoreTuple(t);
+		data_page.writeToBuffer(data_guard.frame_->page);
+
+		auto meta_guard = bpm.writePage(this->metadata_page_id);
+        TableMetadata meta;
+        std::memcpy(&meta, meta_guard.frame_->page, sizeof(TableMetadata));
+		meta.total_tuples++;
+		std::memcpy(meta_guard.frame_->page, &meta, sizeof(TableMetadata));
+	}
+
 	void TableManager::createTuple(Tuple& t){
 
 		db::storage::BufferPoolManager& bpm = db::storage::BufferPoolManager::getInstance();

@@ -34,6 +34,7 @@ namespace db::storage{
 		char page[4096];
 		void unpin();
 		bool dirtyBit{false};
+		bool committedDirty{false};
 		std::shared_mutex latch;
 		//maybe add a Last Access Time if we use LRU policy.
 	};
@@ -96,6 +97,8 @@ namespace db::storage{
 		Frame* allocateNewFrame(page_id_t new_page_id);
 		WritePageGuard newPage(page_id_t page_id);
 		void flushPagestoDisk(); //only to be used if DB is shutting down.
+		void markDirtyPagesCommitted();
+		void flushCommittedPagestoDisk();
 
 	};
 
