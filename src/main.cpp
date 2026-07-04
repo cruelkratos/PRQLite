@@ -1,19 +1,19 @@
 #include "include/main.hpp"
 #include "include/frontend/parser/parser.hpp"
+#include "include/frontend/semantic_analyzer.hpp"
+#include "include/virtual_machine/executor.hpp"
 
 #include <iostream>
 #include <string>
 namespace db {
 
-	DB::DB(){
-		this->_parser = std::make_unique<db::parser::Parser>();
-		this->_semantic_analyzer = std::make_unique<db::semantic::SemanticAnalyzer>();
-		this->_transaction_manager = &db::transaction::TransactionManager::current();
-		this->_executor = std::make_unique<db::executor::ExecutorEngine>(&DB::interrupt, *this->_transaction_manager);
-		// this->_lexer = std::make_unique<db::lexer::Lexer>
-	}
+	DB::DB() = default;
 
 	int DB::REPL() {
+	thread_local db::parser::Parser parser;
+	thread_local db::semantic::SemanticAnalyzer semantic_analyzer;
+	thread_local db::executor::ExecutorEngine executor(&DB::interrupt);
+
     std::string line;
     std::string accumulated;
 
@@ -42,29 +42,29 @@ namespace db {
 
         if (terminated) {
             try {
-                _parser->insert(accumulated);
-                _parser->parse_();
-                db::parser::ASTNode* tree = _parser->getTree();
+                parser.insert(accumulated);
+                parser.parse_();
+                db::parser::ASTNode* tree = parser.getTree();
                 // TODO: pass to executor
 				if(tree == nullptr){
 					std::cout<<"bruh"<<std::endl;
 				}
-				_semantic_analyzer->analyze(tree);
-				_executor->execute(tree);
+				semantic_analyzer.analyze(tree);
+				executor.execute(tree);
 
             } catch (const std::runtime_error &e) {
                 std::cerr << "Error: " << e.what() << "\n";
-				_parser->reset();
+				parser.reset();
             }
 			catch(const std::exception &e){
 				std::cerr << "Error: " << e.what() << "\n";
-				_parser->reset();
+				parser.reset();
 			}
 			catch(...){
 				std::cerr<<"Unknown Error Caught"<<"\n";
-				_parser->reset();
+				parser.reset();
 			}
-            _parser->reset();
+            parser.reset();
             accumulated.clear();
             // std::cout << "db> ";
         } else {

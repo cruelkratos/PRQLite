@@ -66,7 +66,7 @@ namespace db::transaction{
 		return _context;
 	}
 
-	void TransactionManager::setWriteAheadLog(WriteAheadLog* wal){
+	void TransactionManager::setWriteAheadLog(db::recovery::WriteAheadLog* wal){
 		_wal = wal;
 	}
 

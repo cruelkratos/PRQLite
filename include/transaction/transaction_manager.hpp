@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include/transaction/transaction_context.hpp"
+#include "include/recovery/log_manager.hpp"
 
 namespace db::transaction{
 
@@ -23,7 +24,7 @@ namespace db::transaction{
 		TransactionResult apply(Action action);
 		bool hasActiveTransaction() const;
 		const TransactionContext& context() const;
-		void setWriteAheadLog(WriteAheadLog* wal);
+		void setWriteAheadLog(db::recovery::WriteAheadLog* wal);
 
 	private:
 		TransactionManager();
@@ -31,6 +32,6 @@ namespace db::transaction{
 
 		TransactionContext _context{};
 		transaction_id_t _nextTransactionId{1};
-		WriteAheadLog* _wal{nullptr};
+		db::recovery::WriteAheadLog* _wal{nullptr};
 	};
 }

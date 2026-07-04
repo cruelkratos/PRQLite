@@ -11,7 +11,7 @@ PRQLite is a C++17 relational database engine. Public headers live in `include/`
 - `docker build -t prqlite:latest .` builds the container image described in `Dockerfile`.
 - `docker run -it -v prqlite-data:/data prqlite:latest` starts PRQLite with persistent storage.
 
-- For normal testing after implementing any feature don't follow above methods unless asked simply do cmake --build ./build --config Debug am
+- For normal testing after implementing any feature don't follow above methods unless asked simply do `cmake --build ./build --config Debug` 
 
 ## Coding Style & Naming Conventions
 Use modern C++17 and keep headers in `include/` paired with implementations in `src/`. Follow the existing lowercase snake_case file naming style, for example `buffer_pool.cpp`, `semantic_analyzer.hpp`, and `create_index.cpp`. Prefer subsystem directories over flat additions. CMake enables strict warnings: `/W4 /permissive-` on MSVC and `-Wall -Wextra -Wpedantic` elsewhere, so keep new code warning-clean. Match the local indentation and brace style in neighboring files.
