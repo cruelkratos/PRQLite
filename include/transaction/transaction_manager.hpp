@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 namespace db::memory{
@@ -45,5 +46,6 @@ namespace db::transaction{
 		transaction_id_t _nextTransactionId{1};
 		db::recovery::WriteAheadLog* _wal{nullptr};
 		std::vector<std::function<void()>> undo_actions_;
+		std::unordered_set<page_id_t> touched_pages_;
 	};
 }

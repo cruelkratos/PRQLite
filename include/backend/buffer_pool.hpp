@@ -12,6 +12,7 @@
 #include <cstdlib> 
 #include <list>
 #include <ctime>
+#include <unordered_set>
 
 
 /*
@@ -97,7 +98,7 @@ namespace db::storage{
 		Frame* allocateNewFrame(page_id_t new_page_id);
 		WritePageGuard newPage(page_id_t page_id);
 		void flushPagestoDisk(); //only to be used if DB is shutting down.
-		void markDirtyPagesCommitted();
+		void markDirtyPagesCommitted(const std::unordered_set<page_id_t>& page_ids);
 		void flushCommittedPagestoDisk();
 
 	};

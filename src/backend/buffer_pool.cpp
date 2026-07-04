@@ -212,9 +212,9 @@ namespace db::storage{
 
 	}
 
-	void BufferPoolManager::markDirtyPagesCommitted(){
+	void BufferPoolManager::markDirtyPagesCommitted(const std::unordered_set<page_id_t>& page_ids){
 		for(size_t i = 0; i < this->poolSize; ++i){
-			if(bufferPool[i].dirtyBit){
+			if(bufferPool[i].dirtyBit && page_ids.count(bufferPool[i].page_id) > 0){
 				bufferPool[i].committedDirty = true;
 			}
 		}

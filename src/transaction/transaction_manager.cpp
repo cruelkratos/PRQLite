@@ -34,8 +34,9 @@ namespace db::transaction{
 			_wal->appendCommit(transactionId);
 		}
 		undo_actions_.clear();
-		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted();
+		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted(touched_pages_);
 		db::storage::BufferPoolManager::getInstance().flushCommittedPagestoDisk();
+		touched_pages_.clear();
 		_context = {};
 		return {transactionId, _context.state, "COMMIT"};
 	}
@@ -50,8 +51,9 @@ namespace db::transaction{
 		if(_wal){
 			_wal->appendRollback(transactionId);
 		}
-		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted();
+		db::storage::BufferPoolManager::getInstance().markDirtyPagesCommitted(touched_pages_);
 		db::storage::BufferPoolManager::getInstance().flushCommittedPagestoDisk();
+		touched_pages_.clear();
 		_context = {};
 		return {transactionId, _context.state, "ROLLBACK"};
 	}
@@ -86,6 +88,7 @@ namespace db::transaction{
 			_wal->appendInsert(_context.transactionId, tuple);
 		}
 		auto rid = tuple.rid;
+		touched_pages_.insert(rid.page_id);
 		undo_actions_.push_back([tableManager, rid]{
 			tableManager->deleteTuple(rid);
 		});
@@ -96,6 +99,7 @@ namespace db::transaction{
 		if(_wal){
 			_wal->appendDelete(_context.transactionId, tuple);
 		}
+		touched_pages_.insert(tuple.rid.page_id);
 		undo_actions_.push_back([tableManager, tuple]{
 			tableManager->restoreTuple(tuple);
 		});

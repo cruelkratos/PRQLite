@@ -36,10 +36,11 @@ Each layer is written from scratch with no external database dependencies.
 - Query execution engine (SELECT, INSERT, DELETE, CREATE TABLE)
 - Page-based persistent storage with buffer pool manager
 - FILTER and PROJECT and DELETE
+- Transactions and write-ahead logging (WAL)
 
 **In Progress**
+- Background Service to clear WAL
 - B+ Tree indexes
-- Transactions and write-ahead logging (WAL)
 - Bloom Filter Integration for lookup skips.
 - ORDER BY
 

@@ -36,6 +36,8 @@ namespace db::memory{
 	class Tuple{
 		public:
 		RecordID rid{UINT32_MAX, UINT32_MAX};
+		std::uint16_t slot_offset{0};
+		std::uint16_t slot_size{0};
 		std::vector<char> data;
 		Tuple(std::vector<char> bytes) : data(std::move(bytes)){};
 
