@@ -80,4 +80,4 @@ The database will automatically create its storage files inside `/data` on first
 
 
 ## Use of Large Language Models
-AI was used for concept walkthroughs and boilerplate; all core systems designed and implemented by hand, used Claude Sonnet and Gemini 3.1 Pro (also used for mundane functions and writing test files).
+AI was used for concept walkthroughs and boilerplate; all core systems designed and implemented by hand, used Claude Sonnet, OpenAI Codex and Gemini 3.1 Pro (also used for mundane functions and writing test files).

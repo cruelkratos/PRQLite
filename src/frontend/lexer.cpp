@@ -43,6 +43,11 @@ namespace db::lexer{
 		  {"INT", TokenType::INT}, {"int", TokenType::INT},
 		  {"TEXT", TokenType::TEXT}, {"text", TokenType::TEXT},
 		  {"BOOL", TokenType::BOOL}, {"bool", TokenType::BOOL},
+
+		  //transactions 
+		  {"BEGIN", TokenType::BEGIN}, {"begin", TokenType::BEGIN},
+		  {"COMMIT", TokenType::COMMIT}, {"commit", TokenType::COMMIT},
+		  {"ROLLBACK", TokenType::ROLLBACK}, {"rollback", TokenType::ROLLBACK},
       }) 
 	{
 		if(_inputStream.size() == 0){

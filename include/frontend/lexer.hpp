@@ -42,7 +42,11 @@ namespace db::lexer{
 		INTO,
 		VALUES,
 
+		//TRANSACTIONS
+		BEGIN, COMMIT, ROLLBACK,
+
         EOF_TOKEN
+
     };
 
 	struct Token{

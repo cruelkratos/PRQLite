@@ -4,6 +4,7 @@
 #include "include/virtual_machine/table_manager.hpp"
 #include "include/frontend/semantic_analyzer.hpp"
 #include "include/catalog.hpp"
+#include "include/transaction/transaction_manager.hpp"
 #include "include/utils.hpp"
 #include <memory>
 #include <optional>
@@ -137,8 +138,10 @@ namespace db::executor{
 	class ExecutorEngine :  public db::parser::ASTVisitor{
 		private:
 		volatile std::sig_atomic_t* interrupt;
+		db::transaction::TransactionManager& transaction_manager;
 		public:
-		ExecutorEngine(volatile std::sig_atomic_t* i) : interrupt(i){}
+		ExecutorEngine(volatile std::sig_atomic_t* i, db::transaction::TransactionManager& tm = db::transaction::TransactionManager::current())
+			: interrupt(i), transaction_manager(tm){}
 		void execute(db::parser::ASTNode* root){
 			if(root){
 				root->accept(*this);
@@ -147,9 +150,10 @@ namespace db::executor{
 		// void visit(db::parser::InsertStatement* node) override;
 		void visit(db::parser::InsertStatement& node) override;
 		void visit(db::parser::CreateStatement& node) override;
-        void visit(db::parser::DeleteStatement& node) override;
+		void visit(db::parser::DeleteStatement& node) override;
 		void visit(db::parser::SelectStatement& node) override;
 		void visit(db::parser::CreateIdxStatement& node) override;
+		void visit(db::parser::TransactionStatement& node) override;
 
 		void visit(db::parser::BinaryExpr& node) override {}
         void visit(db::parser::LiteralExpr& node) override {}

@@ -88,5 +88,25 @@ namespace db::executor{
 		
 	}
 
+	void ExecutorEngine::visit(db::parser::TransactionStatement& node){
+		db::transaction::TransactionManager::Action action;
+		switch(node.getTransactionType()){
+			case db::parser::TransactionStatement::Type::Begin:
+				action = db::transaction::TransactionManager::Action::Begin;
+				break;
+			case db::parser::TransactionStatement::Type::Commit:
+				action = db::transaction::TransactionManager::Action::Commit;
+				break;
+			case db::parser::TransactionStatement::Type::Rollback:
+				action = db::transaction::TransactionManager::Action::Rollback;
+				break;
+			default:
+				throw std::runtime_error("TRANSACTION ERROR: Unsupported transaction statement.");
+		}
+
+		auto result = transaction_manager.apply(action);
+		std::cout << result.message << "\n";
+	}
+
 
 };

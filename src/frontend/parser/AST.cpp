@@ -34,6 +34,14 @@ namespace db::parser{
 		indexColumns = c;
 	}
 
+	TransactionStatement::TransactionStatement(TransactionStatement::Type t){
+		this->transactionType = t;
+	}
+
+	TransactionStatement::Type TransactionStatement::getTransactionType() const{
+		return transactionType;
+	}
+
 	void BinaryExpr::accept(db::parser::ASTVisitor& visitor) {
 		visitor.visit(*this);
 	}
@@ -62,6 +70,9 @@ namespace db::parser{
 		visitor.visit(*this);
 	}
 	void CreateIdxStatement::accept(db::parser::ASTVisitor& visitor) {
+		visitor.visit(*this);
+	}
+	void TransactionStatement::accept(db::parser::ASTVisitor& visitor){
 		visitor.visit(*this);
 	}
 

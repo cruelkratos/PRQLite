@@ -34,35 +34,47 @@ namespace db::parser{
 		return ;
 	}
 
-	void Parser::parseStatement(){
-		// implement according to grammar.
+	void Parser::parseStatement() {
+    // implement according to grammar.
 		db::lexer::Token t = peak();
-		if(t.type == db::lexer::TokenType::SELECT){
+		
+		if (t.type == db::lexer::TokenType::SELECT) {
 			statementTree = parseSelect();
 		}
-		else if(t.type == db::lexer::TokenType::INSERT){
+		else if (t.type == db::lexer::TokenType::INSERT) {
 			statementTree = parseInsert();
 		}
-
-		else if(t.type == db::lexer::TokenType::DELETE){
+		else if (t.type == db::lexer::TokenType::DELETE) {
 			statementTree = parseDelete();
 		}
-
-		else if(t.type == db::lexer::TokenType::CREATE){
+		else if (t.type == db::lexer::TokenType::CREATE) {
 			//can be create table or create idx.
 			advance();
 			db::lexer::Token t2 = peak();
-			if(t2.type == db::lexer::TokenType::INDEX){
+			if (t2.type == db::lexer::TokenType::INDEX) {
 				statementTree = parseIndex();
 				return;
 			}
-			if(t2.type == db::lexer::TokenType::TABLE){
+			if (t2.type == db::lexer::TokenType::TABLE) {
 				statementTree = parseCreate();
 				return;
 			}
 			throw std::runtime_error("SYNTAX ERROR: Invalid CREATE Syntax.");
 		}
-		else throw std::runtime_error("SYNTAX ERROR: Statement must be CRE/SEL/INS/DEL");
+		// --- TRANSACTION CONTROL ---
+		else if (t.type == db::lexer::TokenType::BEGIN) {
+			statementTree = parseBegin();
+		}
+		else if (t.type == db::lexer::TokenType::COMMIT) {
+			statementTree = parseCommit();
+		}
+		else if (t.type == db::lexer::TokenType::ROLLBACK) {
+			statementTree = parseRollback();
+		}
+		// ---------------------------
+		else {
+			throw std::runtime_error("SYNTAX ERROR: Statement must be CRE/SEL/INS/DEL/BEGIN/COMMIT/ROLLBACK");
+		}
 	}
 
 	SelectStatement* Parser::parseSelect(){
@@ -313,5 +325,24 @@ namespace db::parser{
 		return node;
 	}
 
+	TransactionStatement* Parser::parseBegin(){
+		advance();
+		if(!isAtEnd()) throw std::runtime_error("SYNTAX ERROR: INCORRECT BEGIN SYNTAX.");
+		auto * node = new TransactionStatement(TransactionStatement::Type::Begin);
+		return node;
+	}
 
+	TransactionStatement* Parser::parseCommit(){
+		advance();
+		if(!isAtEnd()) throw std::runtime_error("SYNTAX ERROR: INCORRECT COMMIT SYNTAX.");
+		auto * node = new TransactionStatement(TransactionStatement::Type::Commit);
+		return node;
+	}
+
+	TransactionStatement* Parser::parseRollback(){
+		advance();
+		if(!isAtEnd()) throw std::runtime_error("SYNTAX ERROR: INCORRECT ROLLBACK SYNTAX.");
+		auto * node = new TransactionStatement(TransactionStatement::Type::Rollback);
+		return node;
+	}
 }

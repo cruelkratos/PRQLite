@@ -22,6 +22,7 @@ namespace db::parser {
     class DeleteStatement;
     class CreateStatement;
 	class CreateIdxStatement;
+	class TransactionStatement;
 	class ASTVisitor{
 		public:
 		virtual ~ASTVisitor() = default;
@@ -33,6 +34,7 @@ namespace db::parser {
 		virtual void visit(db::parser::DeleteStatement& node) =0;
 		virtual void visit(db::parser::CreateStatement& node) =0;
 		virtual void visit (db::parser::CreateIdxStatement& node) =0;
+		virtual void visit (db::parser::TransactionStatement& node) =0;
 
 	};
 	
@@ -116,5 +118,20 @@ namespace db::parser {
 		std::vector<std::string> indexColumns;
 		void accept(db::parser::ASTVisitor& visitor) override;
 	};
+	class TransactionStatement : public ASTNode{
+		public:
+		enum class Type{
+			Begin=0,
+			Commit=1,
+			Rollback=2
+		};
+		TransactionStatement(Type t);
+		void accept(db::parser::ASTVisitor& visitor) override;
+		Type getTransactionType() const;
+		
+		private:
+		Type transactionType;
+	};
+
 
 }

@@ -24,6 +24,9 @@ namespace db::semantic{
         void visit(db::parser::IdentifierExpr& node) override;
         void visit(db::parser::LiteralExpr& node) override;
 
+		//transaction
+		void visit(db::parser::TransactionStatement& node) override {}
+
 		private:
 		db::table::ColumnType resolveExpression(
         db::parser::ASTNode* node,
